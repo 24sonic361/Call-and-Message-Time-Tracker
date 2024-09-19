@@ -1,17 +1,21 @@
 const express = require('express');
-const app = express();
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+// Importing routes
 const callRoutes = require('./routes/callRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 
-// Middleware to parse JSON requests
-app.use(express.json());
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-// Define the routes
+// Routes
 app.use('/api/calls', callRoutes);
 app.use('/api/messages', messageRoutes);
 
-// Start the server on port 3000 or a specified port in the environment
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
+

@@ -1,33 +1,23 @@
-// Simulated in-memory "database" for calls
-let calls = [
-    { id: 1, contact: 'Alice Johnson', duration: 12, timestamp: new Date() },
-    { id: 2, contact: 'Bob Brown', duration: 8, timestamp: new Date() }
-];
+const db = require('../db');
 
-// Function to get all calls
-const getCalls = (req, res) => {
-    // Respond with the list of all calls
-    res.json(calls);
+// Get all calls
+exports.getAllCalls = (req, res) => {
+  db.query('SELECT * FROM call_log', (err, results) => {
+    if (err) {
+      return res.status(500).send('Error retrieving calls');
+    }
+    res.json(results);
+  });
 };
 
-// Function to add a new call
-const addCall = (req, res) => {
-    // Extract the call details from the request body
-    const { contact, duration } = req.body;
-
-    // Create a new call entry with a unique ID
-    const newCall = { 
-        id: calls.length + 1, 
-        contact, 
-        duration, 
-        timestamp: new Date() 
-    };
-
-
-    calls.push(newCall);
-
-
-    res.status(201).json(newCall);
+// Add a new call
+exports.addCall = (req, res) => {
+  const { user_id, contact_name, contact_number, call_duration, category_id } = req.body;
+  const query = 'INSERT INTO call_log (user_id, contact_name, contact_number, call_duration, category_id) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [user_id, contact_name, contact_number, call_duration, category_id], (err, results) => {
+    if (err) {
+      return res.status(500).send('Error adding the call');
+    }
+    res.status(201).send('Call added successfully');
+  });
 };
-
-module.exports = { getCalls, addCall };
