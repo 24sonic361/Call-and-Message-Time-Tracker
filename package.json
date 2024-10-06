@@ -1,0 +1,40 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "main": "expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-navigation/bottom-tabs": "^6.6.1",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
+    "@react-navigation/stack": "^6.4.1",
+    "@rneui/base": "^4.0.0-rc.7",
+    "@rneui/themed": "^4.0.0-rc.8",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "expo": "~51.0.28",
+    "expo-status-bar": "~1.12.1",
+    "express": "^4.21.0",
+    "mysql": "^2.18.1",
+    "react": "18.2.0",
+    "react-native": "0.74.5",
+    "react-native-call-log": "^2.1.2",
+    "react-native-get-sms-android": "^2.1.0",
+    "react-native-safe-area-context": "^4.10.5",
+    "react-native-screens": "3.31.1",
+    "react-native-vector-icons": "^10.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
