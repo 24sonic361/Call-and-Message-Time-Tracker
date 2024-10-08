@@ -1,13 +1,13 @@
 import CallLogs from 'react-native-call-log';
-import SmsAndroid from 'react-native-get-sms-android';  // Import SMS Android
-import { requestCallLogPermission, requestSmsPermission } from './permission';  // Import permission functions
+import SmsAndroid from 'react-native-get-sms-android';  
+import { requestCallLogPermission, requestSmsPermission } from './permission'; 
 
 // Fetch call logs
 export async function fetchCallLogs() {
   const hasPermission = await requestCallLogPermission();
   if (hasPermission) {
-    const logs = await CallLogs.loadAll();  // Fetch call logs
-    console.log('Call Logs:', logs);  // Log the call logs for debugging
+    const logs = await CallLogs.loadAll();  
+    console.log('Call Logs:', logs);  
     return logs;
   } else {
     console.log("Call log permission denied");
@@ -15,14 +15,13 @@ export async function fetchCallLogs() {
   }
 }
 
-// Fetch SMS logs
 export async function fetchSmsLogs() {
   const hasPermission = await requestSmsPermission();
   if (hasPermission) {
     const filter = {
-      box: 'inbox', // 'inbox' or 'sent'
-      indexFrom: 0, // Starts from the first message
-      maxCount: 10, // Maximum number of messages to fetch
+      box: 'inbox', 
+      indexFrom: 0, 
+      maxCount: 10, 
     };
 
     return new Promise((resolve, reject) => {
@@ -33,8 +32,8 @@ export async function fetchSmsLogs() {
           reject([]);
         },
         (count, smsList) => {
-          const messages = JSON.parse(smsList);  // Parse the SMS data
-          console.log('SMS List:', messages);  // Log the SMS list for debugging
+          const messages = JSON.parse(smsList);  
+          console.log('SMS List:', messages);  
           resolve(messages);
         }
       );

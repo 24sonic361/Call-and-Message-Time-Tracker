@@ -2,12 +2,11 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 
 export default function ListItem({ contactName, phoneNumber, timestamp, type, duration, isCallLog }) {
-  // Determine the icon based on the type of call (incoming, outgoing, missed)
-  let callIcon = type === 'incoming' ? require('../assets/incomingIcon.png') :
+
+    let callIcon = type === 'incoming' ? require('../assets/incomingIcon.png') :
                  type === 'outgoing' ? require('../assets/outgoingIcon.png') :
                  require('../assets/missedIcon.png');
   
-  // Example placeholder for message icon (You can modify as needed)
   let messageIcon = require('../assets/messageIcon.png');
   
   const date = new Date(parseInt(timestamp));
@@ -16,7 +15,7 @@ export default function ListItem({ contactName, phoneNumber, timestamp, type, du
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/avatarIcon.png')}  // Placeholder for avatar icon
+        source={require('../assets/avatarIcon.png')}  
         style={styles.avatar}
       />
       <View style={styles.detailsContainer}>
