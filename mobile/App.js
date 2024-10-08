@@ -12,12 +12,16 @@ const Stack = createStackNavigator();
 function WelcomeScreen({ navigation }) {
   return (
     <View style={welcomeStyle.container}>
+
       <Image source={logo} style={welcomeStyle.image}></Image>
 
       <Text style={welcomeStyle.header}>
         {"\n"}Welcome to Call and Message
       </Text>
-      <Text style={welcomeStyle.header}>Time Tracker</Text>
+
+      <Text style={welcomeStyle.header}>
+        Time Tracker
+      </Text>
 
       <Text style={welcomeStyle.content}>
         {"\n"}Represented By AUT
@@ -28,6 +32,7 @@ function WelcomeScreen({ navigation }) {
         color="#6F2DA8"
         onPress={() => navigation.navigate('HomeScreen')}
       />
+
     </View>
   );
 }
@@ -35,18 +40,23 @@ function WelcomeScreen({ navigation }) {
 export default function App() {
   return (
     <NavigationContainer>
+
       <Stack.Navigator initialRouteName="WelcomeScreen">
+
         <Stack.Screen 
           name="WelcomeScreen" 
           component={WelcomeScreen} 
           options={{ title: 'Welcome' }} 
         />
+
         <Stack.Screen 
           name="HomeScreen" 
-          component={HomeScreen}  // HomeScreen from screens folder
+          component={HomeScreen}  
           options={{ title: 'Home' }} 
         />
+
       </Stack.Navigator>
+      
     </NavigationContainer>
   );
 }
