@@ -1,5 +1,5 @@
 {
   "projects": {
-    "default": "call-and-message-time-tracker"
+    "development": "call-and-message-time-tracker"
   }
 }

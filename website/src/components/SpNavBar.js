@@ -28,7 +28,7 @@ function SpNavbar() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
-        <Navbar.Brand href="/" >Call and Message Time Tracker</Navbar.Brand>
+        <Navbar.Brand href="/" >CAMTT</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
