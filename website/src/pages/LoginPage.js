@@ -13,7 +13,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/home'); // Navigate to home page on successful login
+      navigate('/'); // Navigate to home page on successful login
     } catch (error) {
       console.error('Error signing in:', error);
       alert('Error signing in. Please check your credentials.');
