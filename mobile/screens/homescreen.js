@@ -1,8 +1,9 @@
 import React from 'react';
 import { Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import CallLogScreen from './CallLogScreen'; // Import Call Log screen
-import MessageLogScreen from './MessageLogScreen'; // Import Message Log screen
+import CallLogScreen from './CallLogScreen'; // Corrected import path for Call Log screen
+import MessageLogScreen from './MessageLogScreen'; // Corrected import path for Message Log screen
+import styles from '../styles/HomeScreenStyle';
 
 const Tab = createBottomTabNavigator();
 
@@ -23,17 +24,14 @@ export default function HomeScreen() {
           return (
             <Image
               source={iconSource}
-              style={{
-                width: 25,
-                height: 25,
-                tintColor: focused ? '#6F2DA8' : '#808080'  // Purple when focused, gray when not
-              }}
+              style={[
+                styles.icon,
+                { tintColor: focused ? '#6F2DA8' : '#808080' }  // Purple when focused, gray when not
+              ]}
             />
           );
         },
-        tabBarLabelStyle: {
-          fontSize: 12, // Adjust the size of the label text
-        },
+        tabBarLabelStyle: styles.tabBarLabel,
         tabBarActiveTintColor: '#6F2DA8',  // Purple color when the tab is active
         tabBarInactiveTintColor: '#808080',  // Gray color when the tab is inactive
       })}
@@ -51,4 +49,3 @@ export default function HomeScreen() {
     </Tab.Navigator>
   );
 }
-

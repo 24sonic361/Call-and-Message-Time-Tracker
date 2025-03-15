@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SectionList, StyleSheet } from 'react-native';
+import { View, Text, SectionList } from 'react-native';
 import { fetchSmsLogs } from '../components/fetchLogs'; 
 import ListItem from '../components/ListItem';  
+import styles from '../styles/MessageLogStyle';
 
 export default function MessageLogScreen() {
   const [smsLogs, setSmsLogs] = useState([]);
@@ -55,17 +56,3 @@ export default function MessageLogScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 10,
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    backgroundColor: '#f4f4f4',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-  },
-});
