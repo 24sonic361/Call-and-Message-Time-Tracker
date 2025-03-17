@@ -64,7 +64,7 @@ export default function HomeScreen() {
       const _granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
         {
-          title: "Call Log Example",
+          title: "Call Log",
           message: "Access your call logs",
           buttonNeutral: "Ask Me Later",
           buttonNegative: "Cancel",
@@ -204,10 +204,10 @@ export default function HomeScreen() {
                   <View>
                     <ThemedText type="defaultSemiBold">
                       {v.type === "UNKNOWN"
-                        ? "ไม่รู้จัก"
+                        ? "Unknown"
                         : v.name
                         ? v.name
-                        : "ไม่พบชื่อ"}
+                        : "Unknown"}
                     </ThemedText>
                     <View style={{ flexDirection: "row" }}>
                       <ThemedText type="time" style={{ width: 70 }}>
