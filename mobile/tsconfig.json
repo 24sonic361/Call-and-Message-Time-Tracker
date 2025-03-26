@@ -1,6 +1,12 @@
 {
   "extends": "./node_modules/expo/tsconfig.base.json",
   "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es6",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "strict": true,
     "paths": {
       "@/*": [
