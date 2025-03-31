@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, Image } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol, IconSymbol2 } from "@/components/ui/IconSymbol";
@@ -36,6 +36,25 @@ export default function TabLayout() {
           ),
         }}
       />
+      
+      <Tabs.Screen
+        name="smslog"
+        options={{
+          title: "SMS",
+          tabBarIcon: ({ color, focused }) => (
+          <Image
+          source={require("../../assets/images/smsIcon.png")}
+          style={{
+            width: 24,
+            height: 24,
+            tintColor: focused ? color : "#aaa",
+          }}
+          resizeMode="contain"
+          />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="explore"
         options={{

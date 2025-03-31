@@ -45,7 +45,7 @@ export default function HomeScreen() {
     _PermissionsAndroid();
   }, []);
   useEffect(() => {
-    setIsMounted(true); // ให้แน่ใจว่า component ถูก mount แล้ว
+    setIsMounted(true); // To make that component is already mounted 
   }, []);
   useEffect(() => {
     if (isMounted) {
@@ -71,6 +71,7 @@ export default function HomeScreen() {
           buttonPositive: "OK",
         }
       );
+      
       if (_granted === PermissionsAndroid.RESULTS.GRANTED) {
         CallLogs.load(50).then(async (c: any) => {
           const groupedData = await groupByDate(c);
