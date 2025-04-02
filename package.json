@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "expo-router": "^4.0.20"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0"
+  }
+}
