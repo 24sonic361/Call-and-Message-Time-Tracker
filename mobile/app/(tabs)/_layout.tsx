@@ -27,7 +27,7 @@ export default function TabLayout() {
         }),
       }}
     >
-      <Tabs.Screen
+      <Tabs.Screen                                        // Call Screen
         name="index"
         options={{
           title: "Phone",
@@ -37,8 +37,8 @@ export default function TabLayout() {
         }}
       />
       
-      <Tabs.Screen
-        name="smslog"
+      <Tabs.Screen        
+        name="smslog"                                      // SMS log Screen
         options={{
           title: "SMS",
           tabBarIcon: ({ color, focused }) => (
@@ -56,7 +56,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="explore"
+        name="explore"                                      // Sync Screen
         options={{
           title: "Sync",
           tabBarIcon: ({ color }) => (

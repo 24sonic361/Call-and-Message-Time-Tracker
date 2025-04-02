@@ -37,32 +37,32 @@ interface PropsDataCalling {
   phoneNumber: string;
 }
 
-export default function HomeScreen() {
-  const [dataCalling, setDataCalling] = useState([]) as any;
-  const [isMounted, setIsMounted] = useState(false);
-  const router = useRouter();
-  useEffect(() => {
-    _PermissionsAndroid();
+export default function HomeScreen() {                             // Home Screen
+  const [dataCalling, setDataCalling] = useState([]) as any;       // Call log data
+  const [isMounted, setIsMounted] = useState(false);               // To check if the component is mounted
+  const router = useRouter();                                      // Router to navigate to other screens
+  useEffect(() => {                                                // Request permission to access android
+    _PermissionsAndroid();                                        
+  }, []);
+  useEffect(() => {                                               
+    setIsMounted(true);                                           // Check if the component is mounted
   }, []);
   useEffect(() => {
-    setIsMounted(true); // To make that component is already mounted 
-  }, []);
-  useEffect(() => {
-    if (isMounted) {
-      router.push({
+    if (isMounted) {                                          
+      router.push({                                               // Navigate to the pincode screen
         pathname: "/pincode",
         params: { openModel: "Y" },
       });
     }
   }, [isMounted]);
-  const _PermissionsAndroid = async () => {
+  const _PermissionsAndroid = async () => {                                 // Request permission to access call logs
     try {
       if (__DEV__) {
-        const groupedData = await groupByDate(mockup.dataCall.slice(0, 50));
+        const groupedData = await groupByDate(mockup.dataCall.slice(0, 50));      // Mock data for development
         setDataCalling(groupedData);
       }
-      const _granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
+      const _granted = await PermissionsAndroid.request(                        // Request permission to access call logs
+        PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,                          
         {
           title: "Call Log",
           message: "Access your call logs",
@@ -72,24 +72,24 @@ export default function HomeScreen() {
         }
       );
       
-      if (_granted === PermissionsAndroid.RESULTS.GRANTED) {
-        CallLogs.load(50).then(async (c: any) => {
-          const groupedData = await groupByDate(c);
-          setDataCalling(groupedData);
+      if (_granted === PermissionsAndroid.RESULTS.GRANTED) {          // If permission is granted
+        CallLogs.load(50).then(async (c: any) => {                    // Load call logs
+          const groupedData = await groupByDate(c);                   // Group call logs by date
+          setDataCalling(groupedData);                                // Set call logs data
         });
       }
     } catch (e) {}
   };
-  const formatDate = (timestamp: number) => {
+  const formatDate = (timestamp: number) => {                         // Format date to HH:mm
     const date = new Date(timestamp);
-    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;    //  Format date to HH:mm
   };
-  const formatTime = (s: number) => {
+  const formatTime = (s: number) => {                                 // Format time to mm:ss
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
     return `${minutes}m ${seconds}s`;
   };
-  const groupByDate = async (data: any) => {
+  const groupByDate = async (data: any) => {                         // Group call logs by date
     return data.reduce((acc: any, item: any) => {
       const date = new Date(parseInt(item.timestamp))
         .toISOString()
@@ -101,7 +101,7 @@ export default function HomeScreen() {
       return acc;
     }, {});
   };
-  const isToday = (date: Date) => {
+  const isToday = (date: Date) => {                                   // Check if the date is today
     const today = new Date();
     return (
       date.getFullYear() === today.getFullYear() &&
@@ -110,26 +110,26 @@ export default function HomeScreen() {
     );
   };
 
-  const isYesterday = (date: Date) => {
+  const isYesterday = (date: Date) => {                                // Check if the date is yesterday
     const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1); // ลดวันที่ลง 1 วัน
+    yesterday.setDate(yesterday.getDate() - 1); 
     return (
       date.getFullYear() === yesterday.getFullYear() &&
       date.getMonth() === yesterday.getMonth() &&
       date.getDate() === yesterday.getDate()
     );
   };
-  const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;
-  const RenderCalling = () => {
+  const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;    // Line separator
+  const RenderCalling = () => {                                                     // Render call logs
     return Object.entries(dataCalling).flatMap(([logDate, calls]) => {
       const date = `${logDate}T00:00:00`;
       const _logDate = new Date(date);
-      let formattedDate = _logDate.toLocaleDateString("en-GB", {
+      let formattedDate = _logDate.toLocaleDateString("en-GB", {             // Format date to dd/mm/yyyy
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       });
-      if (isYesterday(_logDate)) {
+      if (isYesterday(_logDate)) {            
         formattedDate = "YESTERDAY";
       }
       if (isToday(_logDate)) {

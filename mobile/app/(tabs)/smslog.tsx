@@ -19,19 +19,19 @@ import {
   export default function SmsLogScreen() {
     const [smsData, setSmsData] = useState<any>({});
   
-    useEffect(() => {
-      requestSmsPermission();
+    useEffect(() => {                                    
+      requestSmsPermission();                                  // Request SMS permission on component mount
     }, []);
   
-    const requestSmsPermission = async () => {
+    const requestSmsPermission = async () => {                    // Request SMS permission from the user
       try {
-        if (__DEV__) {
-          const groupedData = await groupByDate(smsMockData.slice(0, 50));
+        if (__DEV__) {                                                         // If in development mode, use mock data
+          const groupedData = await groupByDate(smsMockData.slice(0, 50));     // Group mock data by date
           setSmsData(groupedData);
         }
   
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_SMS,
+        const granted = await PermissionsAndroid.request(              // Request SMS permission
+          PermissionsAndroid.PERMISSIONS.READ_SMS,                    
           {
             title: "SMS Permission",
             message: "This app needs access to your SMS messages",
@@ -41,26 +41,26 @@ import {
           }
         );
   
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {            // If permission granted, load SMS messages
           SmsAndroid.list(
             JSON.stringify({ box: "inbox", maxCount: 50 }),
             (fail: any) => {
               console.log("SMS Load Failed: ", fail);
             },
-            async (count: any, smsListStr: string) => {
+            async (count: any, smsListStr: string) => {                   // On success, parse and group SMS messages by date
               const smsList: SmsItem[] = JSON.parse(smsListStr);
               const groupedData = await groupByDate(smsList);
               setSmsData(groupedData);
             }
           );
         }
-      } catch (e) {
+      } catch (e) {                                          // Handle any errors that occur during permission request or SMS loading
         console.warn(e);
       }
     };
   
-    const groupByDate = async (data: SmsItem[]) => {
-      return data.reduce((acc: any, item) => {
+    const groupByDate = async (data: SmsItem[]) => {            // Group SMS messages by date
+      return data.reduce((acc: any, item) => {                     // For each SMS item, extract the date and group by it
         const date = new Date(item.date).toISOString().split("T")[0];
         if (!acc[date]) acc[date] = [];
         acc[date].push(item);
@@ -68,7 +68,7 @@ import {
       }, {});
     };
   
-    const formatDateTime = (timestamp: number) => {
+    const formatDateTime = (timestamp: number) => {            // Format the date and time for display
       const date = new Date(timestamp);
       const time = `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
       const datePart = date.toLocaleDateString("en-GB");
