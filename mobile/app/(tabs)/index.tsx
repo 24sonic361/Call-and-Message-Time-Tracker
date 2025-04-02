@@ -2,8 +2,6 @@ import {
   Image,
   StyleSheet,
   Platform,
-  TouchableOpacity,
-  Text,
   PermissionsAndroid,
   SafeAreaView,
   View,
@@ -38,15 +36,18 @@ interface PropsDataCalling {
 }
 
 export default function HomeScreen() {
-  const [dataCalling, setDataCalling] = useState([]) as any;
+  const [dataCalling, setDataCalling] = useState<Record<string, PropsDataCalling[]>>({});
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
   useEffect(() => {
     _PermissionsAndroid();
   }, []);
+
   useEffect(() => {
-    setIsMounted(true); // ให้แน่ใจว่า component ถูก mount แล้ว
+    setIsMounted(true);
   }, []);
+
   useEffect(() => {
     if (isMounted) {
       router.push({
@@ -55,12 +56,15 @@ export default function HomeScreen() {
       });
     }
   }, [isMounted]);
+
   const _PermissionsAndroid = async () => {
     try {
       if (__DEV__) {
+        // Use mock data during simulator testing
         const groupedData = await groupByDate(mockup.dataCall.slice(0, 50));
         setDataCalling(groupedData);
       }
+
       const _granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
         {
@@ -72,24 +76,28 @@ export default function HomeScreen() {
         }
       );
       if (_granted === PermissionsAndroid.RESULTS.GRANTED) {
-        CallLogs.load(50).then(async (c: any) => {
-          const groupedData = await groupByDate(c);
-          setDataCalling(groupedData);
-        });
+        const callLogsData = await CallLogs.load(50);
+        const groupedData = await groupByDate(callLogsData);
+        setDataCalling(groupedData);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error("Permission error:", e);
+    }
   };
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
+
+  const formatDate = (timestamp: string) => {
+    const date = new Date(parseInt(timestamp));
     return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
+
   const formatTime = (s: number) => {
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
     return `${minutes}m ${seconds}s`;
   };
-  const groupByDate = async (data: any) => {
-    return data.reduce((acc: any, item: any) => {
+
+  const groupByDate = async (data: any[]) => {
+    return data.reduce((acc: Record<string, PropsDataCalling[]>, item: PropsDataCalling) => {
       const date = new Date(parseInt(item.timestamp))
         .toISOString()
         .split("T")[0];
@@ -100,6 +108,7 @@ export default function HomeScreen() {
       return acc;
     }, {});
   };
+
   const isToday = (date: Date) => {
     const today = new Date();
     return (
@@ -111,14 +120,16 @@ export default function HomeScreen() {
 
   const isYesterday = (date: Date) => {
     const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1); // ลดวันที่ลง 1 วัน
+    yesterday.setDate(yesterday.getDate() - 1);
     return (
       date.getFullYear() === yesterday.getFullYear() &&
       date.getMonth() === yesterday.getMonth() &&
       date.getDate() === yesterday.getDate()
     );
   };
+
   const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;
+
   const RenderCalling = () => {
     return Object.entries(dataCalling).flatMap(([logDate, calls]) => {
       const date = `${logDate}T00:00:00`;
@@ -134,7 +145,7 @@ export default function HomeScreen() {
       if (isToday(_logDate)) {
         formattedDate = "TODAY";
       }
-      const list = (calls as any[]) || [];
+      const list = (calls as PropsDataCalling[]) || [];
       return (
         <View key={`${logDate}`} style={{ marginTop: 10, marginBottom: 10 }}>
           {Line()}
@@ -153,7 +164,7 @@ export default function HomeScreen() {
           </View>
           {Line()}
           {list.map((v, index) => {
-            const date = formatDate(Number(v.timestamp));
+            const date = formatDate(v.timestamp);
             const isOpen = v.type === "MISSED";
             const _IconFeather =
               v.type === "OUTGOING"
@@ -217,7 +228,7 @@ export default function HomeScreen() {
                         numberOfLines={1}
                         type="mini"
                         ellipsizeMode="middle"
-                        style={{ width: 180 }}
+                        style={{ width: 180}}
                       >
                         {v.phoneNumber}
                       </ThemedText>
@@ -259,6 +270,7 @@ export default function HomeScreen() {
       );
     });
   };
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#0288d1", dark: "#0288d1" }}
@@ -267,4 +279,4 @@ export default function HomeScreen() {
       {RenderCalling()}
     </ParallaxScrollView>
   );
-}
+};

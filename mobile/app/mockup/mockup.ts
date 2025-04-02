@@ -6,7 +6,7 @@ const dataCall = [
     duration: 8,
     dateTime: "28 พ.ค. 2024 22:17:25",
     timestamp: "1716909445325",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+12025550123",
   },
   {
     type: "OUTGOING",
@@ -15,7 +15,7 @@ const dataCall = [
     duration: 3,
     dateTime: "28 พ.ค. 2024 22:17:12",
     timestamp: "1716909432305",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+447912345678",
   },
   {
     type: "OUTGOING",
@@ -24,7 +24,7 @@ const dataCall = [
     duration: 0,
     dateTime: "28 พ.ค. 2024 22:16:59",
     timestamp: "1716909419899",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+33123456789",
   },
   {
     type: "OUTGOING",
@@ -33,7 +33,7 @@ const dataCall = [
     duration: 4,
     dateTime: "28 พ.ค. 2024 22:16:47",
     timestamp: "1716909407476",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+12025550124",
   },
   {
     type: "OUTGOING",
@@ -42,7 +42,7 @@ const dataCall = [
     duration: 1,
     dateTime: "28 พ.ค. 2024 22:12:01",
     timestamp: "1716909121946",
-    phoneNumber: "8731852392456844832320283788212322",
+    phoneNumber: "+491512345678",
   },
   {
     type: "OUTGOING",
@@ -51,7 +51,7 @@ const dataCall = [
     duration: 58,
     dateTime: "28 พ.ค. 2024 22:09:17",
     timestamp: "1716908957142",
-    phoneNumber: "8731852392456844832320283788212322",
+    phoneNumber: "+12025550125",
   },
   {
     type: "OUTGOING",
@@ -60,7 +60,7 @@ const dataCall = [
     duration: 2,
     dateTime: "28 พ.ค. 2024 21:48:10",
     timestamp: "1716907690688",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+441234567890",
   },
   {
     type: "OUTGOING",
@@ -69,7 +69,7 @@ const dataCall = [
     duration: 8,
     dateTime: "28 พ.ค. 2024 21:37:40",
     timestamp: "1716907060197",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+12025550126",
   },
   {
     type: "UNKNOWN",
@@ -78,7 +78,7 @@ const dataCall = [
     duration: 0,
     dateTime: "28 พ.ค. 2024 21:35:38",
     timestamp: "1716906938303",
-    phoneNumber: "",
+    phoneNumber: "+12025550127",
   },
   {
     type: "OUTGOING",
@@ -87,7 +87,7 @@ const dataCall = [
     duration: 7,
     dateTime: "28 พ.ค. 2024 21:34:37",
     timestamp: "1716906877800",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+33987654321",
   },
   {
     type: "OUTGOING",
@@ -96,7 +96,7 @@ const dataCall = [
     duration: 5,
     dateTime: "28 พ.ค. 2024 21:32:59",
     timestamp: "1716906779782",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+12025550127",
   },
   {
     type: "OUTGOING",
@@ -105,7 +105,7 @@ const dataCall = [
     duration: 7,
     dateTime: "28 พ.ค. 2024 21:32:37",
     timestamp: "1716906757784",
-    phoneNumber: "8733278647331743962324428328230082",
+    phoneNumber: "+12025550127",
   },
   {
     type: "UNKNOWN",
