@@ -49,7 +49,7 @@ export default function ExploreScreen() {
     try {
       if (__DEV__) {
         // Use mock data during simulator testing
-        const groupedData = await groupByDate(mockup.dataCall.slice(0, 10));
+        const groupedData = await groupByDate(mockup.dataCall.slice(0, 20));
         setDataCalling(groupedData);
       }
 
@@ -64,7 +64,7 @@ export default function ExploreScreen() {
         }
       );
       if (_granted === PermissionsAndroid.RESULTS.GRANTED) {
-        const callLogsData = await CallLogs.load(10);
+        const callLogsData = await CallLogs.load(20);
         const groupedData = await groupByDate(callLogsData);
         setDataCalling(groupedData);
       }
