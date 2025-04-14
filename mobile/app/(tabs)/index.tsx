@@ -2,8 +2,6 @@ import {
   Image,
   StyleSheet,
   Platform,
-  TouchableOpacity,
-  Text,
   PermissionsAndroid,
   SafeAreaView,
   View,
@@ -37,16 +35,19 @@ interface PropsDataCalling {
   phoneNumber: string;
 }
 
-export default function HomeScreen() {                             // Home Screen
-  const [dataCalling, setDataCalling] = useState([]) as any;       // Call log data
-  const [isMounted, setIsMounted] = useState(false);               // To check if the component is mounted
-  const router = useRouter();                                      // Router to navigate to other screens
-  useEffect(() => {                                                // Request permission to access android
-    _PermissionsAndroid();                                        
+export default function HomeScreen() {
+  const [dataCalling, setDataCalling] = useState<Record<string, PropsDataCalling[]>>({});
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    _PermissionsAndroid();
   }, []);
-  useEffect(() => {                                               
-    setIsMounted(true);                                           // Check if the component is mounted
+
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
+
   useEffect(() => {
     if (isMounted) {                                          
       router.push({                                               // Navigate to the pincode screen
@@ -55,14 +56,17 @@ export default function HomeScreen() {                             // Home Scree
       });
     }
   }, [isMounted]);
-  const _PermissionsAndroid = async () => {                                 // Request permission to access call logs
+
+  const _PermissionsAndroid = async () => {
     try {
       if (__DEV__) {
-        const groupedData = await groupByDate(mockup.dataCall.slice(0, 50));      // Mock data for development
+        // Use mock data during simulator testing
+        const groupedData = await groupByDate(mockup.dataCall.slice(0, 50));
         setDataCalling(groupedData);
       }
-      const _granted = await PermissionsAndroid.request(                        // Request permission to access call logs
-        PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,                          
+
+      const _granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
         {
           title: "Call Log",
           message: "Access your call logs",
@@ -71,26 +75,34 @@ export default function HomeScreen() {                             // Home Scree
           buttonPositive: "OK",
         }
       );
-      
-      if (_granted === PermissionsAndroid.RESULTS.GRANTED) {          // If permission is granted
-        CallLogs.load(50).then(async (c: any) => {                    // Load call logs
-          const groupedData = await groupByDate(c);                   // Group call logs by date
-          setDataCalling(groupedData);                                // Set call logs data
-        });
+
+      if (_granted === PermissionsAndroid.RESULTS.GRANTED) {
+        const callLogsData = await CallLogs.load(50);
+        const groupedData = await groupByDate(callLogsData);
+        setDataCalling(groupedData);
+
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error("Permission error:", e);
+    }
   };
-  const formatDate = (timestamp: number) => {                         // Format date to HH:mm
-    const date = new Date(timestamp);
-    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;    //  Format date to HH:mm
+
+
+  const formatDate = (timestamp: string) => {
+    const date = new Date(parseInt(timestamp));
+    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
-  const formatTime = (s: number) => {                                 // Format time to mm:ss
+
+  const formatTime = (s: number) => {
+
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
     return `${minutes}m ${seconds}s`;
   };
-  const groupByDate = async (data: any) => {                         // Group call logs by date
-    return data.reduce((acc: any, item: any) => {
+
+  const groupByDate = async (data: any[]) => {
+    return data.reduce((acc: Record<string, PropsDataCalling[]>, item: PropsDataCalling) => {
+
       const date = new Date(parseInt(item.timestamp))
         .toISOString()
         .split("T")[0];
@@ -101,7 +113,9 @@ export default function HomeScreen() {                             // Home Scree
       return acc;
     }, {});
   };
-  const isToday = (date: Date) => {                                   // Check if the date is today
+
+  const isToday = (date: Date) => {
+
     const today = new Date();
     return (
       date.getFullYear() === today.getFullYear() &&
@@ -112,15 +126,19 @@ export default function HomeScreen() {                             // Home Scree
 
   const isYesterday = (date: Date) => {                                // Check if the date is yesterday
     const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1); 
+
+    yesterday.setDate(yesterday.getDate() - 1);
     return (
       date.getFullYear() === yesterday.getFullYear() &&
       date.getMonth() === yesterday.getMonth() &&
       date.getDate() === yesterday.getDate()
     );
   };
-  const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;    // Line separator
-  const RenderCalling = () => {                                                     // Render call logs
+
+  const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;
+
+  const RenderCalling = () => {
+
     return Object.entries(dataCalling).flatMap(([logDate, calls]) => {
       const date = `${logDate}T00:00:00`;
       const _logDate = new Date(date);
@@ -135,7 +153,7 @@ export default function HomeScreen() {                             // Home Scree
       if (isToday(_logDate)) {
         formattedDate = "TODAY";
       }
-      const list = (calls as any[]) || [];
+      const list = (calls as PropsDataCalling[]) || [];
       return (
         <View key={`${logDate}`} style={{ marginTop: 10, marginBottom: 10 }}>
           {Line()}
@@ -154,7 +172,7 @@ export default function HomeScreen() {                             // Home Scree
           </View>
           {Line()}
           {list.map((v, index) => {
-            const date = formatDate(Number(v.timestamp));
+            const date = formatDate(v.timestamp);
             const isOpen = v.type === "MISSED";
             const _IconFeather =
               v.type === "OUTGOING"
@@ -218,7 +236,7 @@ export default function HomeScreen() {                             // Home Scree
                         numberOfLines={1}
                         type="mini"
                         ellipsizeMode="middle"
-                        style={{ width: 180 }}
+                        style={{ width: 180}}
                       >
                         {v.phoneNumber}
                       </ThemedText>
@@ -260,6 +278,7 @@ export default function HomeScreen() {                             // Home Scree
       );
     });
   };
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#0288d1", dark: "#0288d1" }}
@@ -268,4 +287,4 @@ export default function HomeScreen() {                             // Home Scree
       {RenderCalling()}
     </ParallaxScrollView>
   );
-}
+};
