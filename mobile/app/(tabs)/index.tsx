@@ -49,8 +49,8 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    if (isMounted) {
-      router.push({
+    if (isMounted) {                                          
+      router.push({                                               // Navigate to the pincode screen
         pathname: "/pincode",
         params: { openModel: "Y" },
       });
@@ -75,15 +75,18 @@ export default function HomeScreen() {
           buttonPositive: "OK",
         }
       );
+
       if (_granted === PermissionsAndroid.RESULTS.GRANTED) {
         const callLogsData = await CallLogs.load(50);
         const groupedData = await groupByDate(callLogsData);
         setDataCalling(groupedData);
+
       }
     } catch (e) {
       console.error("Permission error:", e);
     }
   };
+
 
   const formatDate = (timestamp: string) => {
     const date = new Date(parseInt(timestamp));
@@ -91,6 +94,7 @@ export default function HomeScreen() {
   };
 
   const formatTime = (s: number) => {
+
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
     return `${minutes}m ${seconds}s`;
@@ -98,6 +102,7 @@ export default function HomeScreen() {
 
   const groupByDate = async (data: any[]) => {
     return data.reduce((acc: Record<string, PropsDataCalling[]>, item: PropsDataCalling) => {
+
       const date = new Date(parseInt(item.timestamp))
         .toISOString()
         .split("T")[0];
@@ -110,6 +115,7 @@ export default function HomeScreen() {
   };
 
   const isToday = (date: Date) => {
+
     const today = new Date();
     return (
       date.getFullYear() === today.getFullYear() &&
@@ -118,8 +124,9 @@ export default function HomeScreen() {
     );
   };
 
-  const isYesterday = (date: Date) => {
+  const isYesterday = (date: Date) => {                                // Check if the date is yesterday
     const yesterday = new Date();
+
     yesterday.setDate(yesterday.getDate() - 1);
     return (
       date.getFullYear() === yesterday.getFullYear() &&
@@ -131,15 +138,16 @@ export default function HomeScreen() {
   const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;
 
   const RenderCalling = () => {
+
     return Object.entries(dataCalling).flatMap(([logDate, calls]) => {
       const date = `${logDate}T00:00:00`;
       const _logDate = new Date(date);
-      let formattedDate = _logDate.toLocaleDateString("en-GB", {
+      let formattedDate = _logDate.toLocaleDateString("en-GB", {             // Format date to dd/mm/yyyy
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       });
-      if (isYesterday(_logDate)) {
+      if (isYesterday(_logDate)) {            
         formattedDate = "YESTERDAY";
       }
       if (isToday(_logDate)) {
