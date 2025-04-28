@@ -40,11 +40,11 @@ const HomePage = () => {
     <div className="homepage-container">
       {/* Sidebar */}
       <div className="sidebar">
-        <h2 className="law-firm-title">LAW FIRM</h2>
+        <h2 className="law-firm-title">CAMTT</h2>
         <nav className="menu">
           <ul>
             <li className="menu-item">
-              Call / Msg Tracking
+              Call / Message Tracking
             </li>
 
             {/* Add Admin Page link */}
@@ -59,7 +59,7 @@ const HomePage = () => {
 
       {/* Main Content */}
       <div className="main-content">
-        <h1>Call / Msg Tracking</h1>
+        <h1>Call / Message List</h1>
 
         {/* Tabs for Calls and Messages */}
         <div className="tabs">
@@ -105,8 +105,9 @@ const CallsTable = ({ callLogs }) => {
             <td colSpan="6">No call data available</td>
           </tr>
         ) : (
-          callLogs.map((call) => (
-            <tr key={call.id}>
+          callLogs.map((call) => ( // Map through call logs
+            // Assuming call has properties: id, imported_by, phone_number, call_type, start_timestamp, end_timestamp, duration
+            <tr key={call.id}> 
               <td>{call.imported_by}</td>
               <td>{call.phone_number}</td>
               <td>{call.call_type}</td>
@@ -138,7 +139,8 @@ const MessagesTable = ({ messageLogs }) => {
             <td colSpan="4">No message data available</td>
           </tr>
         ) : (
-          messageLogs.map((msg) => (
+          messageLogs.map((msg) => ( // Map through message logs
+            // Assuming msg has properties: id, imported_by, phone_number, sent_timestamp, word_count
             <tr key={msg.id}>
               <td>{msg.imported_by}</td>
               <td>{msg.phone_number}</td>
