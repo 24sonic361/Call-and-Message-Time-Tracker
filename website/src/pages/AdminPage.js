@@ -1,22 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/AdminPage.css';
-
-const initialUsers = [
-  { id: 1, name: 'Ice', enabled: true },
-  { id: 2, name: 'Billy', enabled: false },
-  { id: 3, name: 'Tagi', enabled: true },
-  { id: 4, name: 'Yijin', enabled: false }
-];
+import { supabase } from '../supabaseClient'; // Import supabase client
 
 const AdminPage = () => {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
 
-  // Function to handle the toggle switch
-  const handleToggle = (id) => {
-    setUsers(users.map(user => 
-      user.id === id ? { ...user, enabled: !user.enabled } : user
-    ));
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  async function fetchUsers() {
+    const { data, error } = await supabase
+      .from('users') // Assume Table is named 'users'
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching users:', error.message);
+    } else {
+      setUsers(data);
+    }
+  }
+
+  const handleToggle = async (id, currentEnabled) => {
+    const { error } = await supabase
+      .from('users')
+      .update({ enabled: !currentEnabled })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating user status:', error.message);
+    } else {
+      // Update local state after successful update
+      setUsers(users.map(user => 
+        user.id === id ? { ...user, enabled: !currentEnabled } : user
+      ));
+    }
   };
 
   return (
@@ -48,22 +68,28 @@ const AdminPage = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>
-                  <label className="switch">
-                    <input 
-                      type="checkbox" 
-                      checked={user.enabled} 
-                      onChange={() => handleToggle(user.id)} 
-                    />
-                    <span className="slider"></span>
-                  </label>
-                  {user.enabled ? 'Enabled' : 'Disabled'}
-                </td>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan="2">No user data available</td>
               </tr>
-            ))}
+            ) : (
+              users.map((user) => ( 
+                <tr key={user.id}> 
+                  <td>{user.name}</td>
+                  <td>
+                    <label className="switch">
+                      <input 
+                        type="checkbox" 
+                        checked={user.enabled} 
+                        onChange={() => handleToggle(user.id, user.enabled)} 
+                      />
+                      <span className="slider"></span>
+                    </label>
+                    {user.enabled ? 'Enabled' : 'Disabled'}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
