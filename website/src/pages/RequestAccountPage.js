@@ -19,7 +19,7 @@ const RequestAccountPage = () => {
         SERVICE_ID,
         TEMPLATE_ID,
         formRef.current,
-        PUBLIC_KEY // ✅ ใส่ key ตรงนี้ ไม่ต้องใช้ object
+        PUBLIC_KEY 
       );
 
       setStatus({
@@ -27,7 +27,7 @@ const RequestAccountPage = () => {
         message: '✅ Your request has been sent. Please wait for a response from the admin.',
       });
 
-      formRef.current.reset(); // ✅ ล้างฟอร์มหลังส่งเสร็จ
+      formRef.current.reset(); 
     } catch (error) {
       console.error('EmailJS Error:', error);
       setStatus({
