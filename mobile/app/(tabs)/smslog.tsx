@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, PermissionsAndroid, StyleSheet, Platform } from 'react-native';
-import { ThemedText } from './ThemedText';
-import ParallaxScrollView from './ParallaxScrollView';
+import { ThemedText } from "@/components/ThemedText";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { IconFeather } from './IconSymbol';
 import smsMockData from '../mockup/smsMockup';
 
