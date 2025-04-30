@@ -5,6 +5,8 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import SpNavBar from './components/SpNavBar';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import RequestAccountPage from './pages/RequestAccountPage';
 
 import { AuthProvider, useAuth } from './AuthProvider';
 
@@ -20,6 +22,8 @@ const App = () => {
         <SpNavBar />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/request" element={<RequestAccountPage />} />
           <Route 
             path="/" 
             element={ 

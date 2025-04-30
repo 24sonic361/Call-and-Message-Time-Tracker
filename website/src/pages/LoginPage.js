@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './../firebaseConfig';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -46,9 +46,14 @@ const LoginPage = () => {
               />
             </Form.Group>
 
-            <Button variant="primary" type="submit" className="mt-3">
+            <Button variant="primary" type="submit" className="mt-3 w-100">
               Login
             </Button>
+
+            {/* Forgot Password Button */}
+            <div className="text-center mt-3">
+              <Link to="/reset-password">Forgot Password?</Link>
+            </div>
           </Form>
         </Col>
       </Row>
@@ -57,3 +62,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
