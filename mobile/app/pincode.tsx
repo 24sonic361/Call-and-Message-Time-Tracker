@@ -1,22 +1,52 @@
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { supabase } from "../utils/supabaseClient";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function PinCodeScreen() {
   const [pin, setPin] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
+
   useEffect(() => {
     setModalVisible(params.openModel === "Y");
-  }, []);
+  }, [params]);
+
   useEffect(() => {
     if (pin.length === 4) {
-      router.back();
-      setModalVisible(false);
+      validatePin();
     }
   }, [pin]);
+
+  const validatePin = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("Clients")
+        .select("firstname, lastname")
+        .eq("pincode", pin)
+        .single();
+
+      if (error || !data) {
+        Alert.alert("Error", "Invalid PIN code. Please try again.");
+        setPin("");
+        return;
+      }
+
+      const fullname = `${data.firstname} ${data.lastname}`;
+      await AsyncStorage.setItem('clientFullname', fullname);
+      router.setParams({ clientFullname: fullname });
+      router.back();
+      setModalVisible(false);
+    } catch (error) {
+      console.error("PIN validation error:", error);
+      Alert.alert("Error", "Failed to validate PIN. Please try again.");
+      setPin("");
+    }
+  };
+
   const handlePress = (num: string) => {
     if (num === ".") {
       return;
@@ -25,9 +55,11 @@ export default function PinCodeScreen() {
       setPin((prev) => prev + num);
     }
   };
+
   const handleDelete = () => {
     setPin((prev) => prev.slice(0, -1));
   };
+
   return (
     <Modal animationType="slide" transparent={true} visible={modalVisible}>
       <View style={styles.container}>
@@ -89,14 +121,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   pinBoxFilled: {
-    backgroundColor: "#FFF", // สีเปลี่ยนเมื่อกดตัวเลข
+    backgroundColor: "#FFF",
   },
   pinBox: {
     width: 15,
     height: 15,
     marginHorizontal: 10,
     borderRadius: 100,
-    // backgroundColor: "#FFF",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,

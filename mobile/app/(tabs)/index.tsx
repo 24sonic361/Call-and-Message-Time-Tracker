@@ -23,7 +23,7 @@ import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
 import mockup from "../mockup/mockup";
 import { Colors } from "@/constants/Colors";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 interface PropsDataCalling {
   type: string;
@@ -39,6 +39,8 @@ export default function HomeScreen() {
   const [dataCalling, setDataCalling] = useState<Record<string, PropsDataCalling[]>>({});
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const clientFullname = params.clientFullname as string | undefined;
 
   useEffect(() => {
     _PermissionsAndroid();
@@ -80,13 +82,11 @@ export default function HomeScreen() {
         const callLogsData = await CallLogs.load(50);
         const groupedData = await groupByDate(callLogsData);
         setDataCalling(groupedData);
-
       }
     } catch (e) {
       console.error("Permission error:", e);
     }
   };
-
 
   const formatDate = (timestamp: string) => {
     const date = new Date(parseInt(timestamp));
@@ -94,7 +94,6 @@ export default function HomeScreen() {
   };
 
   const formatTime = (s: number) => {
-
     const minutes = Math.floor(s / 60);
     const seconds = s % 60;
     return `${minutes}m ${seconds}s`;
@@ -102,7 +101,6 @@ export default function HomeScreen() {
 
   const groupByDate = async (data: any[]) => {
     return data.reduce((acc: Record<string, PropsDataCalling[]>, item: PropsDataCalling) => {
-
       const date = new Date(parseInt(item.timestamp))
         .toISOString()
         .split("T")[0];
@@ -115,7 +113,6 @@ export default function HomeScreen() {
   };
 
   const isToday = (date: Date) => {
-
     const today = new Date();
     return (
       date.getFullYear() === today.getFullYear() &&
@@ -126,7 +123,6 @@ export default function HomeScreen() {
 
   const isYesterday = (date: Date) => {                                // Check if the date is yesterday
     const yesterday = new Date();
-
     yesterday.setDate(yesterday.getDate() - 1);
     return (
       date.getFullYear() === yesterday.getFullYear() &&
@@ -138,7 +134,6 @@ export default function HomeScreen() {
   const Line = () => <View style={{ height: 3, backgroundColor: "#0288d1" }} />;
 
   const RenderCalling = () => {
-
     return Object.entries(dataCalling).flatMap(([logDate, calls]) => {
       const date = `${logDate}T00:00:00`;
       const _logDate = new Date(date);

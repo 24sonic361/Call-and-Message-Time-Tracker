@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   PermissionsAndroid,
   Text,
+  Alert,
 } from "react-native";
 import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
@@ -15,9 +16,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useEffect, useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import mockup from "../mockup/mockup";
 import { supabase } from "../../utils/supabaseClient";
-import { PostgrestError } from '@supabase/supabase-js'; // Import for error typing
+import { PostgrestError } from '@supabase/supabase-js';
 
 interface PropsDataCalling {
   type: string;
@@ -32,10 +34,21 @@ interface PropsDataCalling {
 export default function ExploreScreen() {
   const [textUpdate, setTextUpdate] = useState("");
   const [dataCalling, setDataCalling] = useState<Record<string, PropsDataCalling[]>>({});
+  const [clientFullname, setClientFullname] = useState<string | undefined>(undefined);
 
   useEffect(() => {
+    const loadClientFullname = async () => {
+      try {
+        const fullname = await AsyncStorage.getItem('clientFullname');
+        setClientFullname(fullname ?? undefined);
+      } catch (error) {
+        console.error("Error loading clientFullname:", error);
+        Alert.alert("Error", "Failed to load client data. Please re-enter PIN.");
+      }
+    };
+    loadClientFullname();
     initial();
-    _PermissionsAndroid(); // Load real call logs if permissions granted
+    _PermissionsAndroid();
   }, []);
 
   const initial = () => {
@@ -48,7 +61,6 @@ export default function ExploreScreen() {
   const _PermissionsAndroid = async () => {
     try {
       if (__DEV__) {
-        // Use mock data during simulator testing
         const groupedData = await groupByDate(mockup.dataCall.slice(0, 20));
         setDataCalling(groupedData);
       }
@@ -74,97 +86,84 @@ export default function ExploreScreen() {
   };
 
   const syncCallLogsToSupabase = async () => {
+    if (!clientFullname) {
+      Alert.alert("Error", "Client information missing. Please re-enter PIN.");
+      return;
+    }
+
     try {
       const allCalls = Object.values(dataCalling).flat();
 
-    // Fetch existing calls from Supabase with specific fields
-    const { data: existingCalls, error: fetchError } = await supabase
-      .from('CallLogs')
-      .select('whocalled, starttime');
-    if (fetchError) throw fetchError;
+      const { data: existingCalls, error: fetchError } = await supabase
+        .from('CallLogs')
+        .select('whocalled, starttime');
+      if (fetchError) throw fetchError;
 
-    // Log existing calls for debugging (For testing)
-    //console.log("Existing calls in Supabase:", existingCalls);
+      const newCalls = allCalls.filter(call => {
+        if (!call.timestamp || !call.phoneNumber || isNaN(parseInt(call.timestamp))) {
+          console.warn(`Invalid data for call from ${call.phoneNumber || 'unknown'}: timestamp=${call.timestamp}`);
+          return false;
+        }
 
-    const newCalls = allCalls.filter(call => {
-      // Ensure timestamp and phone number exist and are valid
-      if (!call.timestamp || !call.phoneNumber || isNaN(parseInt(call.timestamp))) {
-        console.warn(`Invalid data for call from ${call.phoneNumber || 'unknown'}: timestamp=${call.timestamp}`);
-        return false; // Skip invalid calls
-      }
+        const localTimestampMs = parseInt(call.timestamp);
+        const normalizedLocalTimestamp = new Date(localTimestampMs).toISOString()
+          .replace('T', ' ')
+          .replace('Z', '')
+          .split('.')[0];
 
-      // Convert local timestamp directly to Supabase-compatible format
-      const localTimestampMs = parseInt(call.timestamp);
-      const normalizedLocalTimestamp = new Date(localTimestampMs).toISOString()
-        .replace('T', ' ') // Replace 'T' with space
-        .replace('Z', '') // Remove 'Z'
-        .split('.')[0]; // Remove milliseconds
+        const normalizedPhoneNumber = call.phoneNumber.toString().trim();
 
-      const normalizedPhoneNumber = call.phoneNumber.toString().trim();
+        const isDuplicate = existingCalls?.some(existingCall => {
+          const existingPhone = existingCall.whocalled?.toString().trim() || '';
+          const existingTimestamp = existingCall.starttime?.toString() || '';
+          const normalizedExistingTimestamp = existingTimestamp.replace('T', ' ').split('.')[0];
 
-      // Check if this call already exists in Supabase
-      const isDuplicate = existingCalls?.some(existingCall => {
-        const existingPhone = existingCall.whocalled?.toString().trim() || '';
-        const existingTimestamp = existingCall.starttime?.toString() || '';
+          return existingPhone === normalizedPhoneNumber && normalizedExistingTimestamp === normalizedLocalTimestamp;
+        });
 
-        // Normalize Supabase timestamp to match the same format
-        const normalizedExistingTimestamp = existingTimestamp.replace('T', ' ').split('.')[0];
+        return !isDuplicate;
+      }).map(call => {
+        const timestampMs = parseInt(call.timestamp);
+        const supabaseTimestampFormat = new Date(timestampMs).toISOString()
+          .replace('T', ' ')
+          .replace('Z', '')
+          .split('.')[0];
 
-        return existingPhone === normalizedPhoneNumber && normalizedExistingTimestamp === normalizedLocalTimestamp;
+        const startTime = supabaseTimestampFormat;
+        const endTime = new Date(timestampMs + (call.duration * 1000)).toISOString()
+          .replace('T', ' ')
+          .replace('Z', '')
+          .split('.')[0];
+
+        return {
+          whocalled: call.phoneNumber,
+          starttime: startTime,
+          endtime: endTime,
+          isfeescalculated: 0.50,
+          createdby: clientFullname,
+          modifiedby: clientFullname,
+          type: call.type,
+          rawtype: call.rawType,
+          name: call.name || null,
+          duration: call.duration,
+          datetime: startTime,
+        };
       });
 
-      //For testing
-      /*if (isDuplicate) {
-        console.log(`Skipping duplicate call: phone=${normalizedPhoneNumber}, timestamp=${normalizedLocalTimestamp}`);
+      if (newCalls.length > 0) {
+        const { data, error: insertError } = await supabase
+          .from('CallLogs')
+          .insert(newCalls)
+          .select();
+        if (insertError) throw insertError;
+
+        const now = new Date();
+        let _date = formatDate(now);
+        setTextUpdate(_date);
+        alert(`Synced ${newCalls.length} new call logs`);
       } else {
-        console.log(`New call identified: phone=${normalizedPhoneNumber}, timestamp=${normalizedLocalTimestamp}`);
-      }*/
-
-      return !isDuplicate;
-    }).map(call => {
-      // Convert timestamp directly to Supabase-compatible format (no need to go back to milliseconds)
-      const timestampMs = parseInt(call.timestamp);
-      const supabaseTimestampFormat = new Date(timestampMs).toISOString()
-        .replace('T', ' ') // Replace 'T' with space
-        .replace('Z', '') // Remove 'Z'
-        .split('.')[0]; // Remove milliseconds
-
-      // No need to create new Date objects for starttime and endtime; use the same format
-      const startTime = supabaseTimestampFormat;
-      const endTime = new Date(timestampMs + (call.duration * 1000)).toISOString()
-        .replace('T', ' ')
-        .replace('Z', '')
-        .split('.')[0];
-
-      return {
-        whocalled: call.phoneNumber,
-        starttime: startTime,
-        endtime: endTime,
-        isfeescalculated: 0.50, // Default fee, adjust as needed
-        createdby: 'User',
-        modifiedby: 'User',
-        type: call.type,
-        rawtype: call.rawType,
-        name: call.name || null,
-        duration: call.duration,
-        datetime: startTime, // Use start time as datetime
-      };
-    });
-
-    if (newCalls.length > 0) {
-      const { data, error: insertError } = await supabase
-        .from('CallLogs')
-        .insert(newCalls)
-        .select();
-      if (insertError) throw insertError;
-
-      const now = new Date();
-      let _date = formatDate(now);
-      setTextUpdate(_date);
-      alert(`Synced ${newCalls.length} new call logs`);
-    } else {
-      alert('No new call logs to sync!');
-    }
+        alert('No new call logs to sync!');
+      }
     } catch (error) {
       const err = error as PostgrestError;
       console.error('Sync error:', err.message);
@@ -239,7 +238,7 @@ export default function ExploreScreen() {
       {App()}
     </ParallaxScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
