@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { Fragment, useEffect, useState } from "react";
-import CallLogs from "react-native-call-log";
+import CallLogs from "react-native-sms-log";
 import { StatusBar } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
@@ -45,7 +45,7 @@ export default function HomeScreen() {
     _PermissionsAndroid();
   }, []);
   useEffect(() => {
-    setIsMounted(true); // ให้แน่ใจว่า component ถูก mount แล้ว
+    setIsMounted(true); 
   }, []);
   useEffect(() => {
     if (isMounted) {
@@ -62,10 +62,10 @@ export default function HomeScreen() {
         setDataCalling(groupedData);
       }
       const _granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_CALL_LOG,
+        PermissionsAndroid.PERMISSIONS.READ_SMS_LOG,
         {
-          title: "Call Log",
-          message: "Access your call logs",
+          title: "Sms Log",
+          message: "Access your sms logs",
           buttonNeutral: "Ask Me Later",
           buttonNegative: "Cancel",
           buttonPositive: "OK",

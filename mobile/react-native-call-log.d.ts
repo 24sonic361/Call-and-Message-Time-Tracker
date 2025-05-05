@@ -1,1 +1,1 @@
-declare module 'react-native-call-log';
+declare module 'react-native-sms-log';

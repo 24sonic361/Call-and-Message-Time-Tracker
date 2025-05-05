@@ -48,9 +48,9 @@ const SmsLogScreen = () => {
     setError(null);
     try {
       if (Platform.OS === 'android') {
-        const SmsAndroid = require('react-native-get-sms-android'); // Import only for Android
+        const SmsAndroid = require('react-native-get-sms-android'); 
         SmsAndroid.list(
-          JSON.stringify({ box: 'inbox', maxCount: 50 }), // Or however many you want
+          JSON.stringify({ box: 'inbox', maxCount: 50 }), 
           (fail: any) => {
             console.error('Failed to fetch initial SMS:', fail);
             setError('Failed to load initial SMS messages.');
