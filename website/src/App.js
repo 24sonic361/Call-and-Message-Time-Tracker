@@ -1,49 +1,53 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-
-import LoginPage from './pages/LoginPage';
-import HomePage from './pages/HomePage';
-import AdminPage from './pages/AdminPage';
+import { AuthProvider, useAuth } from './AuthProvider';
+import AppLayout from './layouts/AppLayout';
 import SpNavBar from './components/SpNavBar';
+// Pages
+import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import RequestAccountPage from './pages/RequestAccountPage';
+import HomePage from './pages/HomePage';
+import AdminPage from './pages/AdminPage';
 
-import { AuthProvider, useAuth } from './AuthProvider';
-
+// Protect routes
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" />;
 };
 
-const App = () => {
-  return (
-    <AuthProvider>
-      <Router>
+const App = () => (
+  <AuthProvider>
+    <Router>
+      <AppLayout>
         <SpNavBar />
         <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/request" element={<RequestAccountPage />} />
+
+          {/* Private Routes */}
           <Route 
             path="/" 
-            element={ 
+            element={
               <PrivateRoute>
                 <HomePage />
-              </PrivateRoute> 
+              </PrivateRoute>
             } 
           />
           <Route 
             path="/admin" 
-            element={ 
+            element={
               <PrivateRoute>
                 <AdminPage />
-              </PrivateRoute> 
+              </PrivateRoute>
             } 
           />
         </Routes>
-      </Router>
-    </AuthProvider>
-  );
-};
+      </AppLayout>
+    </Router>
+  </AuthProvider>
+);
 
 export default App;
