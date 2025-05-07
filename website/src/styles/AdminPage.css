@@ -1,67 +1,75 @@
-.admin-page-container {
+.admin-container {
   display: flex;
   min-height: 100vh;
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom right, #f3e5ff, #e4ccff);
 }
 
-.sidebar {
-  width: 250px;
-  background-color: #2c3e50;
-  color: white;
-  padding: 20px;
+/* Reuse Sidebar styles from Sidebar.css */
+
+/* Main Content */
+.main-section {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: auto;
 }
 
-.law-firm-title {
-  color: #e74c3c;
-  font-size: 24px;
-  text-align: center;
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #6b2c93;
+  margin-bottom: 1.5rem;
 }
 
-.menu {
-  margin-top: 50px;
+/* Table */
+.table-container {
+  overflow-x: auto;
 }
 
-.menu ul {
-  list-style: none;
-  padding: 0;
-}
-
-.menu-item {
-  margin: 20px 0;
-}
-
-.menu-link {
-  color: white;
-  text-decoration: none;
-}
-
-.menu-link:hover {
-  color: #e74c3c;
-}
-
-.main-content {
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #ecf0f1;
-}
-
-.admin-table {
+.styled-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(100, 70, 160, 0.1);
+  overflow: hidden;
 }
 
-.admin-table th, .admin-table td {
-  padding: 10px;
-  border: 1px solid #ddd;
+.styled-table thead {
+  background-color: #b98fdc;
+  color: #fff;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 0.9rem 1.2rem;
   text-align: left;
+  border-bottom: 1px solid #e4d2f4;
+  font-size: 0.95rem;
 }
 
+.styled-table tbody tr:nth-child(even) {
+  background-color: #f8f3ff;
+}
+
+.styled-table tbody tr:hover {
+  background-color: #f0e0ff;
+}
+
+.empty-message {
+  text-align: center;
+  color: #9c7ab3;
+  font-style: italic;
+  padding: 1.5rem;
+}
+
+/* Toggle Switch */
 .switch {
   position: relative;
   display: inline-block;
   width: 50px;
-  height: 24px;
+  height: 26px;
+  margin-right: 10px;
 }
 
 .switch input {
@@ -72,32 +80,68 @@
 
 .slider {
   position: absolute;
-  cursor: pointer;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
-  border-radius: 24px;
+  transition: 0.3s;
+  border-radius: 30px;
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
-  border-radius: 50%;
-  left: 4px;
+  height: 20px;
+  width: 20px;
+  left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: 0.3s;
+  border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #4CAF50;
+  background-color: #8e44ad;
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(24px);
+}
+
+.status-label {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.status-label.enabled {
+  color: #4CAF50;
+}
+
+.status-label.disabled {
+  color: #F44336;
+}
+
+/* ✅ Responsive */
+@media (max-width: 768px) {
+  .admin-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #d4bdf1;
+    padding: 1rem;
+  }
+
+  .main-section {
+    padding: 1.2rem;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    font-size: 0.85rem;
+    padding: 0.7rem;
+  }
 }
