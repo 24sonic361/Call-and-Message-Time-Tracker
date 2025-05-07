@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import '../styles/HomePage.css';
+import Sidebar from '../components/Sidebar'; // ใช้ Sidebar ที่แยกไฟล์ไว้
 import { supabase } from '../supabaseClient';
 
 const HomePage = () => {
@@ -29,19 +29,7 @@ const HomePage = () => {
 
   return (
     <div className="homepage-container">
-      <aside className="sidebar">
-        <h2 className="brand">📞 CAMTT</h2>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/" className="menu-link active">Tracking</Link>
-            </li>
-            <li>
-              <Link to="/admin" className="menu-link">Admin</Link>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      <Sidebar />
 
       <main className="main-section">
         <h1 className="page-title">Call & Message Logs</h1>
