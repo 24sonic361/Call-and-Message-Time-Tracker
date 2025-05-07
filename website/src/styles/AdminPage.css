@@ -122,6 +122,108 @@ input:checked + .slider:before {
   color: #F44336;
 }
 
+.page-title-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.add-user-button {
+  background: linear-gradient(135deg, #a675b0, #82489a);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
+}
+
+.add-user-button:hover {
+  background: linear-gradient(135deg, #935eb6, #6e2f9c);
+  box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
+}
+
+.form-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+  animation: fadeInScale 0.3s ease-in-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.popup-form h3 {
+  margin-bottom: 1rem;
+  color: #6b2c93;
+}
+
+.popup-form input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #8e44ad;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #732d91;
+}
+
+.form-actions button[type="button"] {
+  background-color: #eee;
+}
+
+.form-actions button[type="button"]:hover {
+  background-color: #ddd;
+}
+
+
+
 /* ✅ Responsive */
 @media (max-width: 768px) {
   .admin-container {
@@ -144,4 +246,133 @@ input:checked + .slider:before {
     font-size: 0.85rem;
     padding: 0.7rem;
   }
+
+  /* 🔘 Section Title + Add User Button */
+.page-title-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.add-user-button {
+  background: linear-gradient(135deg, #a675b0, #82489a);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
+}
+
+.add-user-button:hover {
+  background: linear-gradient(135deg, #935eb6, #6e2f9c);
+  box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
+}
+
+
+/* Popup Overlay */
+.form-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(30, 0, 50, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 📋 Popup Form Box */
+.popup-form {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 14px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(100, 70, 160, 0.2);
+  animation: slideDown 0.3s ease-out;
+}
+
+.popup-form h3 {
+  color: #82489a;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.popup-form input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+  background-color: #faf5ff;
+  font-family: 'Poppins', sans-serif;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #a675b0;
+  color: #fff;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #8e44ad;
+}
+
+.form-actions button[type="button"] {
+  background-color: #ddd;
+  color: #333;
+}
+
+.form-actions button[type="button"]:hover {
+  background-color: #bbb;
+}
+
+/* Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 }

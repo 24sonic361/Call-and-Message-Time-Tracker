@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import Sidebar from '../components/Sidebar'; 
+import Sidebar from '../components/Sidebar';
 import '../styles/AdminPage.css';
+import Swal from 'sweetalert2';
 
 const AdminPage = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); // State to hold user data
+  const [showForm, setShowForm] = useState(false); // State to control the visibility of the form
+  const [newUser, setNewUser] = useState({ name: '', phone: '', pin: '' }); // State for new user input
 
   useEffect(() => {
     fetchUsers();
@@ -31,12 +34,93 @@ const AdminPage = () => {
     }
   };
 
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (!newUser.name || !newUser.phone || !newUser.pin) return;
+  
+    const { error } = await supabase
+      .from('users')
+      .insert([{
+        name: newUser.name,
+        phone_number: newUser.phone,
+        pin: newUser.pin,
+        enabled: true
+      }]);
+  
+    if (!error) {
+      setNewUser({ name: '', phone: '', pin: '' });
+      setShowForm(false);
+      fetchUsers();
+  
+      // SweetAlert success
+      Swal.fire({
+        icon: 'success',
+        title: 'User Added!',
+        text: 'The new user has been added successfully.',
+        background: '#fdf7ff',
+        color: '#4a235a',
+        confirmButtonColor: '#a675b0',
+        confirmButtonText: 'OK'
+      });
+    } else {
+      console.error('Error adding user:', error);
+  
+      // Optional error alert
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to add user. Please try again.',
+        confirmButtonColor: '#a675b0'
+      });
+    }
+  };
+  
+
   return (
     <div className="admin-container">
       <Sidebar />
 
       <main className="main-section">
-        <h1 className="page-title">Admin - User Management</h1>
+        <div className="page-title-area">
+          <h1 className="page-title">Admin - User Management</h1>
+          <button className="add-user-button" onClick={() => setShowForm(true)}>
+            Add User
+          </button>
+        </div>
+
+        {showForm && (
+          <div className="form-popup">
+            <form className="popup-form" onSubmit={handleAddUser}>
+              <h3>Add New User</h3>
+              <input
+                type="text"
+                placeholder="Name"
+                value={newUser.name}
+                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                required
+              />
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                value={newUser.phone}
+                onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                required
+              />
+              <input
+                type="password"
+                placeholder="PIN"
+                value={newUser.pin}
+                onChange={(e) => setNewUser({ ...newUser, pin: e.target.value })}
+                required
+              />
+              <div className="form-actions">
+                <button type="submit">Add</button>
+                <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        )}
+
         <div className="table-container">
           <table className="styled-table">
             <thead>
