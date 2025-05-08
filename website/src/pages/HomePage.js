@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/HomePage.css';
-import Sidebar from '../components/Sidebar'; // ใช้ Sidebar ที่แยกไฟล์ไว้
+import Sidebar from '../components/Sidebar';
 import { supabase } from '../supabaseClient';
 
 const HomePage = () => {
@@ -14,14 +14,14 @@ const HomePage = () => {
 
   async function fetchData() {
     const { data: calls } = await supabase
-      .from('call_logs')
+      .from('CallLogs')
       .select('*')
-      .order('timestamp', { ascending: false });
+      .order('starttime', { ascending: false });
 
     const { data: messages } = await supabase
-      .from('message_logs')
+      .from('MessageLogs')
       .select('*')
-      .order('timestamp', { ascending: false });
+      .order('senttime', { ascending: false });
 
     setCallLogs(calls || []);
     setMessageLogs(messages || []);
@@ -78,12 +78,12 @@ const CallsTable = ({ callLogs }) => (
         <tr><td colSpan="6" className="empty-message">No call data available</td></tr>
       ) : (
         callLogs.map((call) => (
-          <tr key={call.id}>
-            <td>{call.imported_by}</td>
-            <td>{call.phone_number}</td>
-            <td>{call.call_type}</td>
-            <td>{new Date(call.start_timestamp).toLocaleString()}</td>
-            <td>{new Date(call.end_timestamp).toLocaleString()}</td>
+          <tr key={call.cid}>
+            <td>{call.createdby}</td>
+            <td>{call.name}</td>
+            <td>{call.type}</td>
+            <td>{new Date(call.starttime).toLocaleString()}</td>
+            <td>{new Date(call.endtime).toLocaleString()}</td>
             <td>{call.duration} sec</td>
           </tr>
         ))
@@ -107,11 +107,11 @@ const MessagesTable = ({ messageLogs }) => (
         <tr><td colSpan="4" className="empty-message">No message data available</td></tr>
       ) : (
         messageLogs.map((msg) => (
-          <tr key={msg.id}>
-            <td>{msg.imported_by}</td>
-            <td>{msg.phone_number}</td>
-            <td>{new Date(msg.sent_timestamp).toLocaleString()}</td>
-            <td>{msg.word_count}</td>
+          <tr key={msg.cmid}>
+            <td>{msg.createdby}</td>
+            <td>{msg.whomessaged}</td>
+            <td>{new Date(msg.senttime).toLocaleString()}</td>
+            <td>{msg.wordcount}</td>
           </tr>
         ))
       )}

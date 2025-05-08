@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import Sidebar from '../components/Sidebar';
+import { useAuth } from '../AuthProvider';
 import '../styles/AdminPage.css';
 import Swal from 'sweetalert2';
 
 const AdminPage = () => {
-  const [users, setUsers] = useState([]); // State to hold user data
-  const [showForm, setShowForm] = useState(false); // State to control the visibility of the form
-  const [newUser, setNewUser] = useState({ name: '', phone: '', pin: '' }); // State for new user input
+  const [users, setUsers] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [newUser, setNewUser] = useState({ firstname: '', lastname: '', phone: '', pincode: '' });
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     fetchUsers();
@@ -15,44 +17,66 @@ const AdminPage = () => {
 
   const fetchUsers = async () => {
     const { data, error } = await supabase
-      .from('users')
+      .from('Clients')
       .select('*')
-      .order('name', { ascending: true });
+      .order('firstname', { ascending: true });
 
-    if (error) console.error('Error fetching users:', error);
-    else setUsers(data);
+    if (error) {
+      console.error('Error fetching users:', error);
+    } else {
+      setUsers(data);
+    }
   };
 
-  const handleToggle = async (id, current) => {
+  const handleToggle = async (clid, currentStatus) => {
+    console.log(`Toggling user ${clid} from ${currentStatus} to ${currentStatus === 'enabled' ? 'disabled' : 'enabled'}`);
+    const newStatus = currentStatus === 'enabled' ? 'disabled' : 'enabled';
     const { error } = await supabase
-      .from('users')
-      .update({ enabled: !current })
-      .eq('id', id);
+      .from('Clients')
+      .update({ status: newStatus })
+      .eq('clid', clid);
 
     if (!error) {
-      setUsers(users.map(u => u.id === id ? { ...u, enabled: !current } : u));
+      setUsers(users.map(u => u.clid === clid ? { ...u, status: newStatus } : u));
+    } else {
+      console.error('Error updating status:', error);
     }
   };
 
   const handleAddUser = async (e) => {
     e.preventDefault();
-    if (!newUser.name || !newUser.phone || !newUser.pin) return;
-  
+    if (!newUser.firstname || !newUser.lastname || !newUser.phone || !newUser.pincode) return;
+    if (!/^\d{4}$/.test(newUser.pincode)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid PIN',
+        text: 'PIN must be a 4-digit number.',
+        confirmButtonColor: '#a675b0'
+      });
+      return;
+    }
+
+    const currentTime = new Date();
+    const adminEmail = String(currentUser.email || 'Admin');
     const { error } = await supabase
-      .from('users')
+      .from('Clients')
       .insert([{
-        name: newUser.name,
-        phone_number: newUser.phone,
-        pin: newUser.pin,
-        enabled: true
+        firstname: newUser.firstname,
+        lastname: newUser.lastname,
+        phonenumber: newUser.phone,
+        pincode: newUser.pincode,
+        createdby: adminEmail,
+        modifiedby: adminEmail,
+        createdon: currentTime,
+        modifiedon: currentTime,
+        status: 'enabled'
       }]);
-  
+
     if (!error) {
-      setNewUser({ name: '', phone: '', pin: '' });
+      setNewUser({ firstname: '', lastname: '', phone: '', pincode: '' });
       setShowForm(false);
       fetchUsers();
-  
-      // SweetAlert success
+
       Swal.fire({
         icon: 'success',
         title: 'User Added!',
@@ -64,8 +88,6 @@ const AdminPage = () => {
       });
     } else {
       console.error('Error adding user:', error);
-  
-      // Optional error alert
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -74,7 +96,6 @@ const AdminPage = () => {
       });
     }
   };
-  
 
   return (
     <div className="admin-container">
@@ -94,23 +115,32 @@ const AdminPage = () => {
               <h3>Add New User</h3>
               <input
                 type="text"
-                placeholder="Name"
-                value={newUser.name}
-                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                placeholder="First Name"
+                value={newUser.firstname}
+                onChange={(e) => setNewUser({ ...newUser, firstname: e.target.value })}
                 required
               />
               <input
-                type="tel"
+                type="text"
+                placeholder="Last Name"
+                value={newUser.lastname}
+                onChange={(e) => setNewUser({ ...newUser, lastname: e.target.value })}
+                required
+              />
+              <input
+                type="text"
                 placeholder="Phone Number"
                 value={newUser.phone}
                 onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
                 required
               />
               <input
-                type="password"
-                placeholder="PIN"
-                value={newUser.pin}
-                onChange={(e) => setNewUser({ ...newUser, pin: e.target.value })}
+                type="text"
+                placeholder="4-Digit PIN"
+                value={newUser.pincode}
+                onChange={(e) => setNewUser({ ...newUser, pincode: e.target.value })}
+                pattern="[0-9]{4}"
+                maxLength="4"
                 required
               />
               <div className="form-actions">
@@ -126,27 +156,30 @@ const AdminPage = () => {
             <thead>
               <tr>
                 <th>User Name</th>
+                <th>Phone</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
-                <tr><td colSpan="2" className="empty-message">No user data available</td></tr>
+                <tr><td colSpan="3" className="empty-message">No user data available</td></tr>
               ) : (
                 users.map(user => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
+                  <tr key={user.clid}>
+                    <td>{user.firstname} {user.lastname}</td>
+                    <td>{user.phonenumber}</td>
                     <td>
                       <label className="switch">
                         <input
                           type="checkbox"
-                          checked={user.enabled}
-                          onChange={() => handleToggle(user.id, user.enabled)}
+                          checked={user.status === 'disabled'}
+                          onChange={() => handleToggle(user.clid, user.status)}
+                          style={{ position: 'relative', zIndex: 10 }}
                         />
                         <span className="slider" />
                       </label>
-                      <span className={`status-label ${user.enabled ? 'enabled' : 'disabled'}`}>
-                        {user.enabled ? 'Enabled' : 'Disabled'}
+                      <span className={`status-label ${user.status === 'enabled' ? 'enabled' : 'disabled'}`}>
+                        {user.status === 'enabled' ? 'Enabled' : 'Disabled'}
                       </span>
                     </td>
                   </tr>
