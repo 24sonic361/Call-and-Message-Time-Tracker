@@ -23,7 +23,7 @@ import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
 import mockup from "../mockup/mockup";
 import { Colors } from "@/constants/Colors";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 
 interface PropsDataCalling {
   type: string;
@@ -39,8 +39,6 @@ export default function HomeScreen() {
   const [dataCalling, setDataCalling] = useState<Record<string, PropsDataCalling[]>>({});
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const clientFullname = params.clientFullname as string | undefined;
 
   useEffect(() => {
     _PermissionsAndroid();

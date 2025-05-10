@@ -13,7 +13,7 @@ export default function PinCodeScreen() {
 
   useEffect(() => {
     setModalVisible(params.openModel === "Y");
-  }, [params]);
+  }, []);
 
   useEffect(() => {
     if (pin.length === 4) {
@@ -37,7 +37,6 @@ export default function PinCodeScreen() {
 
       const fullname = `${data.firstname} ${data.lastname}`;
       await AsyncStorage.setItem('clientFullname', fullname);
-      router.setParams({ clientFullname: fullname });
       router.back();
       setModalVisible(false);
     } catch (error) {
