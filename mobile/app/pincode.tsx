@@ -25,12 +25,18 @@ export default function PinCodeScreen() {
     try {
       const { data, error } = await supabase
         .from("Clients")
-        .select("firstname, lastname")
+        .select("firstname, lastname, status")
         .eq("pincode", pin)
         .single();
 
       if (error || !data) {
         Alert.alert("Error", "Invalid PIN code. Please try again.");
+        setPin("");
+        return;
+      }
+
+      if (data.status !== "enabled") {
+        Alert.alert("Error", "Account is disabled. Please contact support.");
         setPin("");
         return;
       }
