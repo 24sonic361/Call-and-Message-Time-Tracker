@@ -13,18 +13,47 @@ const HomePage = () => {
   }, []);
 
   async function fetchData() {
-    const { data: calls } = await supabase
+    // Fetch phonenumbers from Clients table
+    const { data: clientPhones, error: clientError } = await supabase
+      .from('Clients')
+      .select('phonenumber');
+
+    if (clientError) {
+      console.error('Error fetching client phonenumbers:', clientError);
+      setCallLogs([]);
+      setMessageLogs([]);
+      return;
+    }
+
+    const phoneNumbers = clientPhones.map((client) => client.phonenumber);
+
+    // Fetch CallLogs where phonenumber is in Clients.phonenumber
+    const { data: calls, error: callsError } = await supabase
       .from('CallLogs')
       .select('*')
+      .in('whocalled', phoneNumbers)
       .order('starttime', { ascending: false });
 
-    const { data: messages } = await supabase
+    // Fetch MessageLogs where phonenumber is in Clients.phonenumber
+    const { data: messages, error: messagesError } = await supabase
       .from('MessageLogs')
       .select('*')
+      .in('whomessaged', phoneNumbers)
       .order('senttime', { ascending: false });
 
-    setCallLogs(calls || []);
-    setMessageLogs(messages || []);
+    if (callsError) {
+      console.error('Error fetching call logs:', callsError);
+      setCallLogs([]);
+    } else {
+      setCallLogs(calls || []);
+    }
+
+    if (messagesError) {
+      console.error('Error fetching message logs:', messagesError);
+      setMessageLogs([]);
+    } else {
+      setMessageLogs(messages || []);
+    }
   }
 
   return (
@@ -80,7 +109,7 @@ const CallsTable = ({ callLogs }) => (
         callLogs.map((call) => (
           <tr key={call.cid}>
             <td>{call.createdby}</td>
-            <td>{call.name}</td>
+            <td>{call.whocalled}</td>
             <td>{call.type}</td>
             <td>{new Date(call.starttime).toLocaleString()}</td>
             <td>{new Date(call.endtime).toLocaleString()}</td>
