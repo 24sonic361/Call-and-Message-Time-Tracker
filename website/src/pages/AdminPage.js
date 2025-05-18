@@ -10,14 +10,17 @@ const AdminPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [newUser, setNewUser] = useState({ firstname: '', lastname: '', phone: '', pincode: '' });
   const [editingUser, setEditingUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { currentUser } = useAuth();
   const adminEmail = String(currentUser.email || 'Admin');
+  const itemsPerPage = 10;
 
+  //display all users right when the page is triggered
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  //Fetch all clients
+  // Fetch all clients
   const fetchUsers = async () => {
     const { data, error } = await supabase
       .from('Clients')
@@ -28,10 +31,11 @@ const AdminPage = () => {
       console.error('Error fetching users:', error);
     } else {
       setUsers(data);
+      setCurrentPage(1); // Reset to page 1 when data is refreshed
     }
   };
 
-  //Update a client status
+  // Update a client status
   const handleToggle = async (clid, currentStatus) => {
     const newStatus = currentStatus === 'enabled' ? 'disabled' : 'enabled';
     const { error } = await supabase
@@ -46,7 +50,7 @@ const AdminPage = () => {
     }
   };
 
-  //Add new client
+  // Add new client
   const handleAddUser = async (e) => {
     e.preventDefault();
     if (!newUser.firstname || !newUser.lastname || !newUser.phone || !newUser.pincode) return;
@@ -99,7 +103,7 @@ const AdminPage = () => {
     }
   };
 
-  //Update a client information (beside status)
+  // Update a client information (beside status)
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     if (!editingUser.firstname || !editingUser.lastname || !editingUser.phonenumber || !editingUser.pincode) return;
@@ -113,6 +117,7 @@ const AdminPage = () => {
       return;
     }
 
+    //compare data (only update modified field)
     const originalUser = users.find(u => u.clid === editingUser.clid);
     const updates = {};
     if (editingUser.firstname !== originalUser.firstname) updates.firstname = editingUser.firstname;
@@ -154,7 +159,7 @@ const AdminPage = () => {
     }
   };
 
-  //Delete a client
+  // Delete a client
   const handleDeleteUser = async (clid) => {
     const result = await Swal.fire({
       title: 'Delete Confirmation',
@@ -194,6 +199,13 @@ const AdminPage = () => {
       }
     }
   };
+
+  //paging calculation logic
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const paginatedUsers = users.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="admin-container">
@@ -301,10 +313,10 @@ const AdminPage = () => {
               </tr>
             </thead>
             <tbody>
-              {users.length === 0 ? (
+              {paginatedUsers.length === 0 ? (
                 <tr><td colSpan="4" className="empty-message">No user data available</td></tr>
               ) : (
-                users.map(user => (
+                paginatedUsers.map(user => (
                   <tr key={user.clid}>
                     <td>{user.firstname} {user.lastname}</td>
                     <td>{user.phonenumber}</td>
@@ -352,6 +364,25 @@ const AdminPage = () => {
               )}
             </tbody>
           </table>
+          <div className="pagination">
+            <button
+              className="pagination-button"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span className="pagination-info">
+              Page {currentPage} of {totalPages || 1}
+            </span>
+            <button
+              className="pagination-button"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </main>
     </div>

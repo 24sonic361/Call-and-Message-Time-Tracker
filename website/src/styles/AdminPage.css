@@ -239,6 +239,30 @@ input:checked+.slider:before {
   margin-left: 8px;
 }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  gap: 12px;
+}
+.pagination-button {
+  padding: 8px 16px;
+  border: 1px solid #4a235a;
+  background: #fdf7ff;
+  color: #4a235a;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination-info {
+  font-size: 14px;
+  color: #4a235a;
+}
+
 
 /* ✅ Responsive */
 @media (max-width: 768px) {
