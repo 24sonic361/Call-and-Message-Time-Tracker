@@ -27,6 +27,7 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/request" element={<RequestAccountPage />} />
+          <Route path="/bill" element={<BillPage />} />
 
           {/* Private Routes */}
           <Route 
