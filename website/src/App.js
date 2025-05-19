@@ -9,6 +9,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import RequestAccountPage from './pages/RequestAccountPage';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
+import BillPage from './pages/BillPage';
 
 // Protect routes
 const PrivateRoute = ({ children }) => {
