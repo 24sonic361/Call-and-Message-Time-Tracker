@@ -32,6 +32,15 @@ const Sidebar = () => {
               Tracking
             </Link>
           </li>
+          <li className="menu-item">
+            <Link
+              to="/bill"
+              className={`menu-link ${location.pathname === '/bill' ? 'active' : ''}`}
+              onClick={closeMenu}
+            >
+              Billing
+            </Link>
+          </li>
           {adminEmail === 'admin@dev.com' && (
             <li className="menu-item">
               <Link

@@ -1,0 +1,95 @@
+/*paging styling*/
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  gap: 12px;
+}
+.pagination-button {
+  padding: 8px 16px;
+  border: 1px solid #4a235a;
+  background: #fdf7ff;
+  color: #4a235a;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination-info {
+  font-size: 14px;
+  color: #4a235a;
+}
+
+/*slide effect styling*/
+.table-container {
+  overflow-x: hidden !important;
+}
+
+.table-wrapper {
+  overflow-x: hidden;
+  position: relative;
+  will-change: transform;
+}
+
+.slide-out-left {
+  animation: slideOutLeft 0.15s ease-in-out forwards;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.15s ease-in-out forwards;
+}
+
+.slide-out-right {
+  animation: slideOutRight 0.15s ease-in-out forwards;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.15s ease-in-out forwards;
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

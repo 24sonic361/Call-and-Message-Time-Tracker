@@ -1,14 +1,20 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './AuthProvider';
-import AppLayout from './layouts/AppLayout';
-import SpNavBar from './components/SpNavBar';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./AuthProvider";
+import AppLayout from "./layouts/AppLayout";
+import SpNavBar from "./components/SpNavBar";
 // Pages
-import LoginPage from './pages/LoginPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import RequestAccountPage from './pages/RequestAccountPage';
-import HomePage from './pages/HomePage';
-import AdminPage from './pages/AdminPage';
+import LoginPage from "./pages/LoginPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import RequestAccountPage from "./pages/RequestAccountPage";
+import HomePage from "./pages/HomePage";
+import AdminPage from "./pages/AdminPage";
+import BillPage from "./pages/BillPage";
 
 // Protect routes
 const PrivateRoute = ({ children }) => {
@@ -28,21 +34,21 @@ const App = () => (
           <Route path="/request" element={<RequestAccountPage />} />
 
           {/* Private Routes */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <PrivateRoute>
                 <HomePage />
               </PrivateRoute>
-            } 
+            }
           />
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <PrivateRoute>
                 <AdminPage />
               </PrivateRoute>
-            } 
+            }
           />
         </Routes>
       </AppLayout>

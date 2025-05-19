@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/HomePage.css';
 import Sidebar from '../components/Sidebar';
+import { useAuth } from '../AuthProvider';
 import { supabase } from '../supabaseClient';
+import '../styles/Common.css';
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('calls');
@@ -11,15 +13,18 @@ const HomePage = () => {
   const [currentMessagePage, setCurrentMessagePage] = useState(1);
   const [sortOption, setSortOption] = useState('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [animationState, setAnimationState] = useState('');
   const itemsPerPage = 10;
   const dropdownRef = useRef(null);
+  const { currentUser } = useAuth();
+  const adminEmail = String(currentUser.email || "Admin");
 
-  //display all data right when the page is triggered
+  // Display all data when the page is triggered
   useEffect(() => {
     fetchData();
   }, []);
 
-  //handle dropdown selection
+  // Handle dropdown selection
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,30 +35,62 @@ const HomePage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  //fetch all calls and messages from clients
+  // Fetch all calls and messages from clients
   async function fetchData() {
-    //fetch client phone numbers for comparing
-    const { data: clientPhones, error: clientError } = await supabase
-      .from('Customers')
-      .select('phonenumber');
+    // Fetch email from Clients table to compare with adminEmail
+    const { data: clientEmails, error: emailError } = await supabase
+      .from('Clients')
+      .select('email')
+      .eq('email', adminEmail);
 
-    if (clientError) {
-      console.error('Error fetching client phonenumbers:', clientError);
+    if (emailError) {
+      console.error('Error fetching client email:', emailError);
       setCallLogs([]);
       setMessageLogs([]);
       return;
     }
 
-    const phoneNumbers = clientPhones.map((client) => client.phonenumber);
+    let phoneNumbers = [];
 
-    //fetch all client calls
+    if (clientEmails && clientEmails.length > 0) {
+      // Fetch matching email from Customers table
+      const { data: customerPhones, error: customerError } = await supabase
+        .from('Customers')
+        .select('phonenumber')
+        .eq('managedby', clientEmails[0].email);
+
+      if (customerError) {
+        console.error('Error fetching customer phonenumber:', customerError);
+        setCallLogs([]);
+        setMessageLogs([]);
+        return;
+      }
+
+      phoneNumbers = customerPhones.map((customer) => customer.phonenumber);
+    } else {
+      // No email match (admin case), fetch all customer phonenumbers
+      const { data: allCustomerPhones, error: allCustomerError } = await supabase
+        .from('Customers')
+        .select('phonenumber');
+
+      if (allCustomerError) {
+        console.error('Error fetching all customer phonenumbers:', allCustomerError);
+        setCallLogs([]);
+        setMessageLogs([]);
+        return;
+      }
+
+      phoneNumbers = allCustomerPhones.map((customer) => customer.phonenumber);
+    }
+
+    // Fetch all client calls
     const { data: calls, error: callsError } = await supabase
       .from('CallLogs')
       .select('*')
       .in('whocalled', phoneNumbers)
       .order('starttime', { ascending: false });
 
-    //fetch all client messages
+    // Fetch all client messages
     const { data: messages, error: messagesError } = await supabase
       .from('MessageLogs')
       .select('*')
@@ -75,7 +112,7 @@ const HomePage = () => {
     }
   }
 
-  //sort feature logic
+  // Sort feature logic
   const sortData = (data, isCalls) => {
     const sorted = [...data];
     if (isCalls) {
@@ -102,11 +139,11 @@ const HomePage = () => {
     return sorted;
   };
 
-  //sort feature logic
+  // Sort feature logic
   const sortedCallLogs = sortData(callLogs, true);
   const sortedMessageLogs = sortData(messageLogs, false);
 
-  //paging calculation logic
+  // Paging calculation logic
   const totalCallPages = Math.ceil(sortedCallLogs.length / itemsPerPage);
   const totalMessagePages = Math.ceil(sortedMessageLogs.length / itemsPerPage);
 
@@ -120,12 +157,58 @@ const HomePage = () => {
     currentMessagePage * itemsPerPage
   );
 
-  //sort feature handling (reset to page 1 when select a new sort type)
+  // Sort feature handling (reset to page 1 when select a new sort type)
   const handleSortSelect = (option) => {
     setSortOption(option);
     setShowSortDropdown(false);
     setCurrentCallPage(1);
     setCurrentMessagePage(1);
+  };
+
+  // Handle next page with slide animation
+  const handleNextCallPage = () => {
+    if (currentCallPage < totalCallPages) {
+      setAnimationState('slide-out-left');
+      setTimeout(() => {
+        setCurrentCallPage((prev) => prev + 1);
+        setAnimationState('slide-in-right');
+        setTimeout(() => setAnimationState(''), 300); // Reset animation state
+      }, 300); // Match animation duration
+    }
+  };
+
+  const handleNextMessagePage = () => {
+    if (currentMessagePage < totalMessagePages) {
+      setAnimationState('slide-out-left');
+      setTimeout(() => {
+        setCurrentMessagePage((prev) => prev + 1);
+        setAnimationState('slide-in-right');
+        setTimeout(() => setAnimationState(''), 300); // Reset animation state
+      }, 300); // Match animation duration
+    }
+  };
+
+  // Handle previous page with slide animation
+  const handlePrevCallPage = () => {
+    if (currentCallPage > 1) {
+      setAnimationState('slide-out-right');
+      setTimeout(() => {
+        setCurrentCallPage((prev) => prev - 1);
+        setAnimationState('slide-in-left');
+        setTimeout(() => setAnimationState(''), 300); // Reset animation state
+      }, 300); // Match animation duration
+    }
+  };
+
+  const handlePrevMessagePage = () => {
+    if (currentMessagePage > 1) {
+      setAnimationState('slide-out-right');
+      setTimeout(() => {
+        setCurrentMessagePage((prev) => prev - 1);
+        setAnimationState('slide-in-left');
+        setTimeout(() => setAnimationState(''), 300); // Reset animation state
+      }, 300); // Match animation duration
+    }
   };
 
   return (
@@ -176,11 +259,13 @@ const HomePage = () => {
         <div className="table-container">
           {activeTab === 'calls' ? (
             <>
-              <CallsTable callLogs={paginatedCallLogs} />
+              <div className={`table-wrapper ${animationState}`}>
+                <CallsTable callLogs={paginatedCallLogs} />
+              </div>
               <div className="pagination">
                 <button
                   className="pagination-button"
-                  onClick={() => setCurrentCallPage(prev => Math.max(prev - 1, 1))}
+                  onClick={handlePrevCallPage}
                   disabled={currentCallPage === 1}
                 >
                   Prev
@@ -190,7 +275,7 @@ const HomePage = () => {
                 </span>
                 <button
                   className="pagination-button"
-                  onClick={() => setCurrentCallPage(prev => Math.min(prev + 1, totalCallPages))}
+                  onClick={handleNextCallPage}
                   disabled={currentCallPage === totalCallPages || totalCallPages === 0}
                 >
                   Next
@@ -199,11 +284,13 @@ const HomePage = () => {
             </>
           ) : (
             <>
-              <MessagesTable messageLogs={paginatedMessageLogs} />
+              <div className={`table-wrapper ${animationState}`}>
+                <MessagesTable messageLogs={paginatedMessageLogs} />
+              </div>
               <div className="pagination">
                 <button
                   className="pagination-button"
-                  onClick={() => setCurrentMessagePage(prev => Math.max(prev - 1, 1))}
+                  onClick={handlePrevMessagePage}
                   disabled={currentMessagePage === 1}
                 >
                   Prev
@@ -213,7 +300,7 @@ const HomePage = () => {
                 </span>
                 <button
                   className="pagination-button"
-                  onClick={() => setCurrentMessagePage(prev => Math.min(prev + 1, totalMessagePages))}
+                  onClick={handleNextMessagePage}
                   disabled={currentMessagePage === totalMessagePages || totalMessagePages === 0}
                 >
                   Next
@@ -241,7 +328,11 @@ const CallsTable = ({ callLogs }) => (
     </thead>
     <tbody>
       {callLogs.length === 0 ? (
-        <tr><td colSpan="6" className="empty-message">No call data available</td></tr>
+        <tr>
+          <td colSpan="6" className="empty-message">
+            No call data available
+          </td>
+        </tr>
       ) : (
         callLogs.map((call) => (
           <tr key={call.cid}>
@@ -270,7 +361,11 @@ const MessagesTable = ({ messageLogs }) => (
     </thead>
     <tbody>
       {messageLogs.length === 0 ? (
-        <tr><td colSpan="4" className="empty-message">No message data available</td></tr>
+        <tr>
+          <td colSpan="4" className="empty-message">
+            No message data available
+          </td>
+        </tr>
       ) : (
         messageLogs.map((msg) => (
           <tr key={msg.cmid}>
