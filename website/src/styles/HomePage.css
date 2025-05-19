@@ -89,14 +89,14 @@
 .styled-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffffff; 
+  background-color: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 5px 20px rgba(100, 70, 160, 0.15);
 }
 
 .styled-table thead {
-  background-color: #b98fdc; 
+  background-color: #b98fdc;
   color: #fff;
 }
 
@@ -109,11 +109,11 @@
 }
 
 .styled-table tbody tr:nth-child(even) {
-  background-color: #f8f3ff; 
+  background-color: #f8f3ff;
 }
 
 .styled-table tbody tr:hover {
-  background-color: #f0e0ff; 
+  background-color: #f0e0ff;
 }
 
 
@@ -122,6 +122,77 @@
   color: #9c7ab3;
   font-style: italic;
   padding: 1.5rem;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.pagination-button {
+  padding: 8px 16px;
+  border: 1px solid #4a235a;
+  background: #fdf7ff;
+  color: #4a235a;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #4a235a;
+}
+
+.tab-buttons-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.sort-container {
+  position: relative;
+}
+.sort-button {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 8px;
+  cursor: pointer;
+}
+.sort-button:hover {
+  opacity: 0.7;
+}
+.sort-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fdf7ff;
+  border: 1px solid #4a235a;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+.sort-dropdown button {
+  display: block;
+  width: 100px;
+  padding: 8px;
+  border: none;
+  background: none;
+  color: #4a235a;
+  text-align: left;
+  cursor: pointer;
+}
+.sort-dropdown button:hover {
+  background: #a675b0;
+  color: #fff;
 }
 
 /* Responsive */
