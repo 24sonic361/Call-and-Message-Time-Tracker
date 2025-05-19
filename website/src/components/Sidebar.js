@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiMenu, FiX } from 'react-icons/fi';
+import { useAuth } from '../AuthProvider';
 import '../styles/Sidebar.css';
 
 const Sidebar = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { currentUser } = useAuth();
+  const adminEmail = String(currentUser.email || 'Admin');
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
@@ -29,15 +32,17 @@ const Sidebar = () => {
               Tracking
             </Link>
           </li>
-          <li className="menu-item">
-            <Link
-              to="/admin"
-              className={`menu-link ${location.pathname === '/admin' ? 'active' : ''}`}
-              onClick={closeMenu}
-            >
-              Admin
-            </Link>
-          </li>
+          {adminEmail === 'admin@dev.com' && (
+            <li className="menu-item">
+              <Link
+                to="/admin"
+                className={`menu-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                onClick={closeMenu}
+              >
+                Admin
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
     </div>

@@ -101,11 +101,11 @@
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #8e44ad;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(24px);
 }
 
@@ -169,6 +169,7 @@ input:checked + .slider:before {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -222,6 +223,45 @@ input:checked + .slider:before {
   background-color: #ddd;
 }
 
+.action-icon {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.action-icon:hover {
+  opacity: 0.7;
+}
+.action-icon + .action-icon {
+  margin-left: 8px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  gap: 12px;
+}
+.pagination-button {
+  padding: 8px 16px;
+  border: 1px solid #4a235a;
+  background: #fdf7ff;
+  color: #4a235a;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagination-info {
+  font-size: 14px;
+  color: #4a235a;
+}
 
 
 /* ✅ Responsive */
@@ -248,131 +288,132 @@ input:checked + .slider:before {
   }
 
   /* Section Title + Add User Button */
-.page-title-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-}
+  .page-title-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
 
-.add-user-button {
-  background: linear-gradient(135deg, #a675b0, #82489a);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.4rem;
-  font-size: 0.95rem;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
-}
+  .add-user-button {
+    background: linear-gradient(135deg, #a675b0, #82489a);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.4rem;
+    font-size: 0.95rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
+  }
 
-.add-user-button:hover {
-  background: linear-gradient(135deg, #935eb6, #6e2f9c);
-  box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
-}
+  .add-user-button:hover {
+    background: linear-gradient(135deg, #935eb6, #6e2f9c);
+    box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
+  }
 
   /* Popup Background Overlay */
-.form-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  width: 90%;
-  max-width: 400px;
-  animation: fadeInScale 0.3s ease-in-out;
-}
+  .form-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 90%;
+    max-width: 400px;
+    animation: fadeInScale 0.3s ease-in-out;
+  }
 
   /* Popup Card */
-.popup-form {
-  background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: 0 16px 40px rgba(50, 30, 90, 0.25);
-  animation: slideUp 0.3s ease-out;
-}
-
-.popup-form h3 {
-  font-size: 1.3rem;
-  text-align: center;
-  color: #82489a;
-  margin-bottom: 1rem;
-}
-
-.popup-form input {
-  padding: 0.7rem;
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background-color: #fdfaff;
-}
-
-.form-actions {
-  flex-direction: column;
-}
-
-.form-actions button {
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-
-.form-actions button:last-child {
-  margin-bottom: 0;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -60%) scale(0.95);
+  .popup-form {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 16px 40px rgba(50, 30, 90, 0.25);
+    animation: slideUp 0.3s ease-out;
   }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
 
-@keyframes slideUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
+  .popup-form h3 {
+    font-size: 1.3rem;
+    text-align: center;
+    color: #82489a;
+    margin-bottom: 1rem;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
 
-/* Animation */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+  .popup-form input {
+    padding: 0.7rem;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #fdfaff;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .form-actions {
+    flex-direction: column;
   }
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  .form-actions button {
+    width: 100%;
+    margin-bottom: 0.5rem;
   }
-  to {
-    opacity: 1;
+
+  .form-actions button:last-child {
+    margin-bottom: 0;
   }
-}
 
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -60%) scale(0.95);
+    }
 
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
 
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Animation */
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
 }
