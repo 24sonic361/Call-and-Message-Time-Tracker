@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {Table,Form,Button,Card,Row,Col,} from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 import Sidebar from "../components/Sidebar";
-import  "./BillPage.css";
+import  "../styles/HomePage.css";
 
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
