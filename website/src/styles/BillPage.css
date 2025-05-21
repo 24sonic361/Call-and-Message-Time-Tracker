@@ -96,6 +96,19 @@
   display: block;
 }
 
+/* Adjust Form Row for proper spacing */
+.row.mb-3 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem; /* Add spacing between form fields */
+}
+
+/* Ensure each column takes appropriate width */
+.col-md-6 {
+  flex: 1;
+  min-width: 200px; /* Ensure fields don't get too narrow */
+}
+
 /* Button Group */
 .button-group {
   display: flex;
