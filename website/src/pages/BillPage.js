@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Form, Button, Card, Row, Col } from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 import Sidebar from "../components/Sidebar";
-import "../styles/HomePage.css"; // Importing HomePage.css for general styles
-import "../styles/BillPage.css"; // Importing BillPage.css for specific layout
+import "../styles/HomePage.css";
+import "../styles/BillPage.css";
+import Swal from 'sweetalert2';
 
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
@@ -18,6 +19,7 @@ const BillPage = () => {
   const navigate = useNavigate();
   const billingRatePerMinute = 4.0; // $4.00 per minute for calls
   const billingRatePerWord = 2.0; // $2.00 per word for messages
+  const currentTime = new Date(); // For potential future use, mirroring AdminPage
 
   useEffect(() => {
     fetchData();
@@ -54,8 +56,27 @@ const BillPage = () => {
 
       setCallLogs(calls || []);
       setMessageLogs(messages || []);
+      if (!calls?.length && !messages?.length) {
+        Swal.fire({
+          icon: 'info',
+          title: 'No Data',
+          text: 'No billing data found for the selected criteria.',
+          background: '#fdf7ff',
+          color: '#4a235a',
+          confirmButtonColor: '#a675b0',
+          confirmButtonText: 'OK'
+        });
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to fetch billing data. Please try again.',
+        background: '#fdf7ff',
+        color: '#4a235a',
+        confirmButtonColor: '#a675b0'
+      });
     } finally {
       setLoading(false);
     }
@@ -198,7 +219,7 @@ const BillPage = () => {
                   setPhoneNumber("");
                   setStartDate("");
                   setEndDate("");
-                  fetchData(); // Refetch data with cleared filters
+                  fetchData();
                 }}
                 className="clear-button"
               >
