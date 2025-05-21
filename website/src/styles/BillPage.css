@@ -1,3 +1,6 @@
+/* BillPage.css - Specific styles for BillPage */
+
+/* Centering the main content within the homepage-container's main-section */
 .main-section.centered-content {
   display: flex;
   flex-direction: column;
@@ -232,4 +235,3 @@
     padding: 1rem;
   }
 }
-
