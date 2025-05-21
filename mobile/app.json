@@ -1,34 +1,35 @@
 {
   "expo": {
-    "name": "Call Log",
-    "slug": "call-log-mobile",
+    "name": "CAMTT",
+    "slug": "CAMTT03",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Call_Track_Icon.png",
-    "scheme": "myapp",
+    "icon": "./assets/images/adaptive-icon.png",
+    "scheme": "camtt03",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "platforms": [
-      "ios",
-      "android"
-    ],
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.expogo.call.log.test",
-      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.smilennnn.CAMTT03"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/adaptive-icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/adaptive-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -39,11 +40,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {
-        "origin": false
-      },
       "eas": {
-        "projectId": "8bb8c06d-2707-4ad0-bd9c-0260303229c2"
+        "projectId": "5489116a-c89d-46a3-8717-239a959d3d74"
       }
     },
     "owner": "smilennnn"

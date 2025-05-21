@@ -1,41 +1,36 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import "react-native-reanimated";
+// app/_layout.tsx
+import { Slot, useRouter, useSegments } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+export default function RootLayoutWrapper() {
+  return (
+    <AuthProvider>
+      <RootLayout />
+    </AuthProvider>
+  );
+}
 
-export default function RootLayout() {
-  const colorScheme = "light";
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+function RootLayout() {
+  const router = useRouter();
+  const segments = useSegments();
+  const { authorized } = useAuth();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (segments.length > 0) {
+      setReady(true);
     }
-  }, [loaded]);
-  if (!loaded) {
-    return null;
-  }
+  }, [segments]);
 
-  return (
-    <ThemeProvider value={DefaultTheme}>
-      <StatusBar backgroundColor="#0288d1" />
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen name="pincode" options={{ headerShown: false }} />
-      </Stack>
-    </ThemeProvider>
-  );
+  useEffect(() => {
+    const currentRoute = segments[0];
+    const isPincodePage = currentRoute === 'pincode';
+
+    if (ready && !authorized && !isPincodePage) {
+      router.replace('/pincode');
+    }
+  }, [ready, authorized, segments]);
+
+  return <Slot />;
 }

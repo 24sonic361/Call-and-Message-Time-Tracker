@@ -1,151 +1,180 @@
-import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput
+} from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
-export default function PinCodeScreen() {
-  const [pin, setPin] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
+export default function PincodeScreen() {
+  const [pin, setPin] = useState('');
+  const [phone, setPhone] = useState('');
+  const [showPhoneInput, setShowPhoneInput] = useState(true);
+  const [userName, setUserName] = useState('');
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const { setAuthorized } = useAuth();
+
   useEffect(() => {
-    setModalVisible(params.openModel === "Y");
+    checkStoredPhone();
   }, []);
+
   useEffect(() => {
     if (pin.length === 4) {
-      router.back();
-      setModalVisible(false);
+      validatePin(pin);
     }
   }, [pin]);
-  const handlePress = (num: string) => {
-    if (num === ".") {
+
+  const checkStoredPhone = async () => {
+    const stored = await AsyncStorage.getItem('phonenumber');
+    if (stored) {
+      setPhone(stored);
+      setShowPhoneInput(false);
+    }
+  };
+
+  const handleSavePhone = async () => {
+    if (!phone) {
+      Alert.alert('Please enter a phone number');
       return;
     }
-    if (pin.length < 4) {
-      setPin((prev) => prev + num);
+    await AsyncStorage.setItem('phonenumber', phone.trim());
+    setShowPhoneInput(false);
+  };
+
+  const validatePin = async (inputPin: string) => {
+    if (!inputPin || !phone) return;
+
+    const { data, error } = await supabase
+      .from('Clients')
+      .select('firstname, lastname, pincode')
+      .eq('phonenumber', phone.trim())
+      .eq('status', 'enabled')
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      Alert.alert('Error', 'Supabase query failed');
+      return;
     }
+
+    if (!data) {
+      Alert.alert('Not found', 'Phone number not registered or disabled');
+      return;
+    }
+
+    if (data.pincode !== inputPin) {
+      Alert.alert('Incorrect PIN', 'Please try again');
+      setPin('');
+      return;
+    }
+
+    const fullName = `${data.firstname} ${data.lastname}`;
+    setUserName(fullName);
+    setAuthorized(true);
+    setTimeout(() => {
+      router.replace('/tabs/call');
+    }, 1000);
   };
-  const handleDelete = () => {
-    setPin((prev) => prev.slice(0, -1));
-  };
+
   return (
-    <Modal animationType="slide" transparent={true} visible={modalVisible}>
-      <View style={styles.container}>
-        <View style={styles.pinContainer}>
-          {[...Array(4)].map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.pinBox,
-                pin.length > index ? styles.pinBoxFilled : {},
-              ]}
-            />
-          ))}
-        </View>
-        <View style={styles.numberPad}>
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map(
-            (num, k) => (
-              <View key={`${k}-${num}`}>
-                {num !== "del" && (
-                  <TouchableOpacity
-                    style={styles.numButton}
-                    onPress={() => handlePress(num)}
-                  >
-                    {num !== "." && <Text style={styles.numText}>{num}</Text>}
-                  </TouchableOpacity>
-                )}
-                {num === "del" && (
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={handleDelete}
-                  >
-                    <Ionicons name="backspace-outline" size={32} color="#fff" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            )
-          )}
-        </View>
-      </View>
-    </Modal>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.container}
+    >
+      {userName ? (
+        <Text style={styles.welcome}>Welcome, {userName}!</Text>
+      ) : showPhoneInput ? (
+        <>
+          <Text style={styles.title}>Enter Phone Number</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. 0212345678"
+            placeholderTextColor="#bbb"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+          <Text style={styles.button} onPress={handleSavePhone}>
+            Save
+          </Text>
+        </>
+      ) : (
+        <>
+          <Text style={styles.title}>Enter PIN</Text>
+          <TextInput
+            style={styles.pinInput}
+            value={pin}
+            onChangeText={(text) => {
+              if (text.length <= 4) setPin(text);
+            }}
+            secureTextEntry
+            keyboardType="number-pad"
+            placeholder="****"
+            placeholderTextColor="#ccc"
+            maxLength={4}
+          />
+        </>
+      )}
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0288d1",
+    backgroundColor: '#F7F9FC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    color: '#6c4d9c',
+    marginBottom: 16,
+  },
+  input: {
+    borderBottomWidth: 2,
+    borderColor: '#6C63FF',
+    width: '80%',
+    fontSize: 18,
+    padding: 10,
+    textAlign: 'center',
     marginBottom: 20,
+    color: '#333',
   },
-  pinContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  pinBoxFilled: {
-    backgroundColor: "#FFF", // สีเปลี่ยนเมื่อกดตัวเลข
-  },
-  pinBox: {
-    width: 15,
-    height: 15,
-    marginHorizontal: 10,
-    borderRadius: 100,
-    // backgroundColor: "#FFF",
-    justifyContent: "center",
-    alignItems: "center",
+  pinInput: {
     borderWidth: 2,
-    borderColor: "#FFF",
+    borderColor: '#6C63FF',
+    borderRadius: 10,
+    width: '50%',
+    fontSize: 28,
+    textAlign: 'center',
+    paddingVertical: 12,
+    letterSpacing: 10,
+    color: '#000',
+    backgroundColor: '#fff',
+    elevation: 5,
   },
-  pinText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#6200EE",
-  },
-  numberPad: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    width: 300,
-    justifyContent: "space-between",
-  },
-  numButton: {
-    width: 60,
-    height: 60,
-    margin: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 30,
-  },
-  numText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  deleteButton: {
-    width: 60,
-    height: 60,
-    margin: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  submitButton: {
-    marginTop: 20,
-    backgroundColor: "#AAA",
+  button: {
+    marginTop: 10,
+    backgroundColor: '#6C63FF',
+    color: '#fff',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
+    fontWeight: 'bold',
+    overflow: 'hidden',
   },
-  submitActive: {
-    backgroundColor: "#6200EE",
-  },
-  submitText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
+  welcome: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#6c4d9c',
   },
 });

@@ -1,12 +1,6 @@
 {
-  "extends": "./node_modules/expo/tsconfig.base.json",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es6",
-    "module": "esnext",
-    "jsx": "react-jsx",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "strict": true,
     "paths": {
       "@/*": [
@@ -17,8 +11,8 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/routes.ts",
     ".expo/types/**/*.ts",
+    "env.d.ts",
     "expo-env.d.ts"
   ]
 }
