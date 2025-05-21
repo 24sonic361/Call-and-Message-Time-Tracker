@@ -1,0 +1,295 @@
+.billpage-container{
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to bottom right, #f3e5ff, #e4ccff);
+}
+.main-section {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: auto;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #6b2c93;
+  margin-bottom: 1.5rem;
+}
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(100, 70, 160, 0.1);
+  overflow: hidden;
+}   
+.styled-table thead {
+  background-color: #b98fdc;
+  color: #fff;
+}   
+.styled-table th,
+.styled-table td {
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid #e4d2f4;
+  font-size: 0.95rem;
+}
+.styled-table tbody tr:nth-child(even) {
+  background-color: #f8f3ff;
+}
+.styled-table tbody tr:hover {
+  background-color: #f0e0ff;
+}
+.empty-message {
+  text-align: center;
+  color: #9c7ab3;
+  font-style: italic;
+  padding: 1.5rem;
+} 
+
+
+/* Centering the main content within the homepage-container's main-section */
+.main-section.centered-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers content horizontally */
+  justify-content: flex-start; /* Aligns content to the top */
+  width: 100%; /* Ensure it takes full width of its parent */
+  max-width: 900px; /* Limit the width of the centered content */
+  margin: 0 auto; /* Centers the main content block itself */
+  padding: 2rem; /* Consistent padding with HomePage.css .main-section */
+  box-sizing: border-box; /* Includes padding in width calculation */
+}
+
+/* Page Header Area */
+.page-header-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  gap: 1rem; /* Spacing between title and button */
+  margin-bottom: 2rem; /* More space below header */
+  width: 100%; /* Ensure it spans the full width of main-section */
+  max-width: 700px; /* Align with card max-width */
+}
+
+/* Page Title */
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #6b2c93;
+  margin-bottom: 0;
+}
+
+/* Home Button */
+.home-button {
+  background: linear-gradient(135deg, #a675b0, #82489a);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  border-radius: 999px; /* Pill shape */
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
+}
+
+.home-button:hover {
+  background: linear-gradient(135deg, #935eb6, #6e2f9c);
+  box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
+}
+
+/* Filter Card */
+.filter-card,
+.bill-summary-card {
+  width: 100%; /* Ensure these cards take full width of their parent */
+  max-width: 700px; /* Limit width for better readability */
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(100, 70, 160, 0.1);
+  padding: 2rem; /* Increased padding for card body */
+  margin-left: auto; /* Center cards if max-width is set */
+  margin-right: auto; /* Center cards if max-width is set */
+}
+
+/* Form Input Fields */
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fdfaff;
+  color: #4a235a;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #8e44ad;
+  box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.25);
+}
+
+/* Form Labels */
+.form-group .form-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6a3e94;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  justify-content: center; /* Center buttons */
+  gap: 1rem; /* Spacing between buttons */
+  margin-top: 1.5rem; /* Space above buttons */
+  width: 100%;
+}
+
+/* Apply Button */
+.apply-button {
+  background-color: #8e44ad;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.apply-button:hover {
+  background-color: #732d91;
+}
+
+/* Clear Button */
+.clear-button {
+  background-color: #eee;
+  color: #4a235a;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.clear-button:hover {
+  background-color: #ddd;
+}
+
+/* Bill Summary Card and Details */
+.bill-summary-card {
+  padding: 2rem;
+}
+
+.bill-summary-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #6b2c93;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.client-bill-details {
+  background-color: #f8f3ff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(100, 70, 160, 0.08);
+  border: 1px solid #e4d2f4;
+}
+
+.client-bill-details p {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #452463;
+}
+
+.client-bill-details .summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.client-bill-details .summary-value {
+  font-weight: 600;
+  color: #6b2c93;
+}
+
+
+/* Loading Message */
+.text-center {
+  text-align: center;
+  color: #9c7ab3;
+  font-style: italic;
+  padding: 1.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .billpage-container {
+        flex-direction: column; /* Stack elements vertically */
+        
+    }
+    .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #d4bdf1;
+    padding: 1rem;
+  }
+
+  .main-section { /* Adjusted main-section */ 
+    padding: 1rem;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    font-size: 0.85rem;
+    padding: 0.7rem;
+  }
+  .main-section.centered-content { /* Ensure centering still works */
+    align-items: stretch; /* Stretch content to fill width on small screens */
+    padding: 1rem; /* Adjust padding for smaller screens */
+  }
+
+  .page-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-card,
+  .bill-summary-card {
+    padding: 1.5rem; /* Adjust card padding */
+  }
+
+  .filter-card .row .col-md-6 {
+    flex: 0 0 100%; /* Make columns full width */
+    max-width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .apply-button, .clear-button {
+    width: 100%;
+  }
+
+  .client-bill-details {
+    padding: 1rem;
+  }
+}
+
