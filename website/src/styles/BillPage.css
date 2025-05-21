@@ -1,55 +1,3 @@
-.billpage-container{
-  display: flex;
-  min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to bottom right, #f3e5ff, #e4ccff);
-}
-.main-section {
-  flex: 1;
-  padding: 2rem;
-  overflow-x: auto;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #6b2c93;
-  margin-bottom: 1.5rem;
-}
-.styled-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(100, 70, 160, 0.1);
-  overflow: hidden;
-}   
-.styled-table thead {
-  background-color: #b98fdc;
-  color: #fff;
-}   
-.styled-table th,
-.styled-table td {
-  padding: 0.9rem 1.2rem;
-  text-align: left;
-  border-bottom: 1px solid #e4d2f4;
-  font-size: 0.95rem;
-}
-.styled-table tbody tr:nth-child(even) {
-  background-color: #f8f3ff;
-}
-.styled-table tbody tr:hover {
-  background-color: #f0e0ff;
-}
-.empty-message {
-  text-align: center;
-  color: #9c7ab3;
-  font-style: italic;
-  padding: 1.5rem;
-} 
-
-
-/* Centering the main content within the homepage-container's main-section */
 .main-section.centered-content {
   display: flex;
   flex-direction: column;
@@ -210,7 +158,7 @@
 .client-bill-details p {
   margin-bottom: 0.5rem;
   font-size: 1rem;
-  color: #452463;
+  color: #45235a;
 }
 
 .client-bill-details .summary-item {
@@ -236,37 +184,29 @@
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-    .billpage-container {
-        flex-direction: column; /* Stack elements vertically */
-        
-    }
-    .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #d4bdf1;
+  /* .homepage-container handled by HomePage.css for flex-direction: column */
+
+  /* .sidebar handled by HomePage.css for width, border, padding */
+
+  .main-section { /* Adjusted main-section for smaller screens */
     padding: 1rem;
+    max-width: 100%; /* Allow full width on small screens */
   }
 
-  .main-section { /* Adjusted main-section */ 
-    padding: 1rem;
-  }
-
-  .styled-table th,
-  .styled-table td {
-    font-size: 0.85rem;
-    padding: 0.7rem;
-  }
   .main-section.centered-content { /* Ensure centering still works */
     align-items: stretch; /* Stretch content to fill width on small screens */
     padding: 1rem; /* Adjust padding for smaller screens */
   }
 
-  .page-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+  .page-header-area {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
     margin-bottom: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
   }
 
   .filter-card,
