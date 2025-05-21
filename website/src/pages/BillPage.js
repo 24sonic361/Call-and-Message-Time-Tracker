@@ -19,7 +19,6 @@ const BillPage = () => {
   const navigate = useNavigate();
   const billingRatePerMinute = 4.0; // $4.00 per minute for calls
   const billingRatePerWord = 2.0; // $2.00 per word for messages
-  const currentTime = new Date(); // For potential future use, mirroring AdminPage
 
   useEffect(() => {
     fetchData();
@@ -28,9 +27,10 @@ const BillPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Fetch Call Logs
       let callQuery = supabase
         .from("CallLogs")
-        .select("*")
+        .select("name, phone_number, duration, starttime, endtime")
         .order("starttime", { ascending: false });
 
       if (clientName) callQuery = callQuery.eq("name", clientName);
@@ -41,9 +41,10 @@ const BillPage = () => {
       const { data: calls, error: callError } = await callQuery;
       if (callError) throw callError;
 
+      // Fetch Message Logs
       let messageQuery = supabase
         .from("MessageLogs")
-        .select("*")
+        .select("whomessaged, phone_number, wordcount, senttime")
         .order("senttime", { ascending: false });
 
       if (clientName) messageQuery = messageQuery.eq("whomessaged", clientName);
@@ -56,6 +57,7 @@ const BillPage = () => {
 
       setCallLogs(calls || []);
       setMessageLogs(messages || []);
+
       if (!calls?.length && !messages?.length) {
         Swal.fire({
           icon: 'info',
@@ -88,45 +90,32 @@ const BillPage = () => {
       const client = call.name || "Unknown";
       if (!grouped[client]) {
         grouped[client] = {
-          calls: [],
-          messages: [],
           totalCallDuration: 0,
-          callBillableAmount: 0,
           totalMessageWords: 0,
-          messageBillableAmount: 0,
           totalFees: 0,
           phoneNumber: call.phone_number || "N/A",
         };
       }
-      grouped[client].calls.push(call);
       grouped[client].totalCallDuration += call.duration || 0;
-      grouped[client].callBillableAmount =
-        (grouped[client].totalCallDuration / 60) * billingRatePerMinute;
     });
 
     messageLogs.forEach((msg) => {
       const client = msg.whomessaged || "Unknown";
       if (!grouped[client]) {
         grouped[client] = {
-          calls: [],
-          messages: [],
           totalCallDuration: 0,
-          callBillableAmount: 0,
           totalMessageWords: 0,
-          messageBillableAmount: 0,
           totalFees: 0,
           phoneNumber: msg.phone_number || "N/A",
         };
       }
-      grouped[client].messages.push(msg);
       grouped[client].totalMessageWords += msg.wordcount || 0;
-      grouped[client].messageBillableAmount =
-        grouped[client].totalMessageWords * billingRatePerWord;
     });
 
     Object.keys(grouped).forEach((client) => {
-      grouped[client].totalFees =
-        grouped[client].callBillableAmount + grouped[client].messageBillableAmount;
+      const callFee = (grouped[client].totalCallDuration / 60) * billingRatePerMinute;
+      const messageFee = grouped[client].totalMessageWords * billingRatePerWord;
+      grouped[client].totalFees = callFee + messageFee;
     });
 
     return grouped;
