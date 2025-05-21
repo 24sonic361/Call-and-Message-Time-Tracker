@@ -4,6 +4,7 @@ import {Table,Form,Button,Card,Row,Col,} from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 import Sidebar from "../components/Sidebar";
 import  "../styles/HomePage.css";
+import "../styles/BillPage.css";
 
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
