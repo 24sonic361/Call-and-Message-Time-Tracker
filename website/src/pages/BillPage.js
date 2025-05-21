@@ -10,7 +10,6 @@ import  "../styles/BillPage.css"; // Importing BillPage.css for specific layout/
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
   const [messageLogs, setMessageLogs] = useState([]);
-  // Removed searchTerm state as it's no longer used for UI filtering
   const [loading, setLoading] = useState(false);
   const [clientName, setClientName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
