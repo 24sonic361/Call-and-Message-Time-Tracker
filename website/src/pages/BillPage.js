@@ -17,7 +17,8 @@ const BillPage = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const navigate = useNavigate();
-  const billingRate = 4.0; // $4.00 per minute
+  const billingRatePerMinute = 4.0; // $4.00 per minute for calls
+  const billingRatePerWord = 2.0; // $2.00 per word for messages
 
   useEffect(() => {
     fetchData();
@@ -95,14 +96,16 @@ const BillPage = () => {
           messages: [],
           totalCallDuration: 0,
           callBillableAmount: 0,
-          totalMessageCount: 0,
-          phoneNumber: call.phone_number || 'N/A' // Store phone number with client group
+          totalMessageWords: 0, // New: to store total words from messages
+          messageBillableAmount: 0, // New: to store billable amount for messages
+          totalFees: 0, // New: combined fees
+          phoneNumber: call.phone_number || 'N/A'
         };
       }
       grouped[client].calls.push(call);
       grouped[client].totalCallDuration += call.duration || 0;
       grouped[client].callBillableAmount =
-        (grouped[client].totalCallDuration / 60) * billingRate;
+        (grouped[client].totalCallDuration / 60) * billingRatePerMinute;
     });
 
     messageLogs.forEach((msg) => {
@@ -113,50 +116,41 @@ const BillPage = () => {
           messages: [],
           totalCallDuration: 0,
           callBillableAmount: 0,
-          totalMessageCount: 0,
-          phoneNumber: msg.phone_number || 'N/A' // Store phone number with client group
+          totalMessageWords: 0,
+          messageBillableAmount: 0,
+          totalFees: 0,
+          phoneNumber: msg.phone_number || 'N/A'
         };
       }
       grouped[client].messages.push(msg);
-      grouped[client].totalMessageCount += 1;
+      grouped[client].totalMessageWords += msg.wordcount || 0; // Sum word count
+      grouped[client].messageBillableAmount =
+        grouped[client].totalMessageWords * billingRatePerWord; // Calculate message fees
     });
+
+    // Calculate total fees for each client
+    Object.keys(grouped).forEach(client => {
+        grouped[client].totalFees = grouped[client].callBillableAmount + grouped[client].messageBillableAmount;
+    });
+
     return grouped;
   };
 
-  // Removed filteredGroupedLogs function as searchTerm is no longer used for UI filtering
-  // const filteredGroupedLogs = () => {
-  //   const grouped = groupByClient();
-  //   return grouped;
-  // };
-
   const formatDuration = (seconds) => {
-    if (!seconds) return "N/A";
+    if (!seconds) return "0 minute 0 second"; // Changed N/A to 0 minute 0 second
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+    return `${minutes} minute ${remainingSeconds} second`;
   };
 
-  const groupedLogs = groupByClient(); // Directly use groupByClient as filtering is done in fetchData
-  // Total calculations are still useful for overall summary if needed, but not displayed in this version.
-  // const totalBillableTime = Object.values(groupedLogs).reduce(
-  //   (sum, group) => sum + group.totalCallDuration,
-  //   0
-  // );
-  // const totalBillAmount = Object.values(groupedLogs).reduce(
-  //   (sum, group) => sum + group.callBillableAmount,
-  //   0
-  // );
-  // const totalMessages = Object.values(groupedLogs).reduce(
-  //   (sum, group) => sum + group.totalMessageCount,
-  //   0
-  // );
+  const groupedLogs = groupByClient();
 
   return (
     <div className="homepage-container"> {/* Uses homepage-container from HomePage.css */}
       <Sidebar />
       <main className="main-section centered-content"> {/* main-section for content area, centered-content for centering */}
         <div className="page-header-area">
-          <h1 className="page-title">Bill</h1>
+          <h1 className="page-title">Billing:</h1> {/* Updated title as per image */}
           <Button
             variant="primary"
             onClick={() => navigate("/")}
@@ -171,10 +165,10 @@ const BillPage = () => {
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Name</Form.Label>
+                  <Form.Label>Name:</Form.Label> {/* Label as per image */}
                   <Form.Control
                     type="text"
-                    placeholder="Enter Client Name"
+                    placeholder=""
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     className="form-input"
@@ -183,10 +177,10 @@ const BillPage = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Label>Phone Number:</Form.Label> {/* Label as per image */}
                   <Form.Control
                     type="text"
-                    placeholder="Enter Phone Number"
+                    placeholder=""
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="form-input"
@@ -197,7 +191,7 @@ const BillPage = () => {
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Start Time</Form.Label>
+                  <Form.Label>Start Time:</Form.Label> {/* Label as per image */}
                   <Form.Control
                     type="date"
                     value={startDate}
@@ -208,7 +202,7 @@ const BillPage = () => {
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label>End Time</Form.Label>
+                  <Form.Label>End Time:</Form.Label> {/* Label as per image */}
                   <Form.Control
                     type="date"
                     value={endDate}
@@ -255,17 +249,17 @@ const BillPage = () => {
                       client,
                       {
                         totalCallDuration,
-                        callBillableAmount,
-                        totalMessageCount,
-                        phoneNumber: clientPhoneNumber // Destructure phone number from grouped data
+                        totalMessageWords, // Use totalMessageWords
+                        totalFees, // Use totalFees
+                        phoneNumber: clientPhoneNumber
                       },
                     ]) => (
                       <div key={client} className="client-bill-details mb-4">
                         <p className="summary-item">Name: <span className="summary-value">{client}</span></p>
                         <p className="summary-item">Phone Number: <span className="summary-value">{clientPhoneNumber}</span></p>
-                        <p className="summary-item">Total Calling Time: <span className="summary-value">{formatDuration(totalCallDuration)}</span></p>
-                        <p className="summary-item">Total Message: <span className="summary-value">{totalMessageCount} words</span></p>
-                        <p className="summary-item">Fees: <span className="summary-value">${callBillableAmount.toFixed(2)}</span></p>
+                        <p className="summary-item">Total Time Calling: <span className="summary-value">{formatDuration(totalCallDuration)}</span></p>
+                        <p className="summary-item">Total Message: <span className="summary-value">{totalMessageWords} words</span></p>
+                        <p className="summary-item">Fees: <span className="summary-value">${totalFees.toFixed(2)}</span></p>
                       </div>
                     )
                   )
