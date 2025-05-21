@@ -10,6 +10,7 @@ import  "../styles/BillPage.css"; // Importing BillPage.css for specific layout/
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
   const [messageLogs, setMessageLogs] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [clientName, setClientName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
