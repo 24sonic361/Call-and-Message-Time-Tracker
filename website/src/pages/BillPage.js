@@ -1,67 +1,85 @@
+// BillPage.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {Table,Form,Button,Card,Row,Col,} from "react-bootstrap";
+import {Form,Button,Card,Row,Col,} from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 import Sidebar from "../components/Sidebar";
-import  "../styles/HomePage.css";
-import "../styles/BillPage.css";
+import  "../styles/HomePage.css"; // Importing HomePage.css for general styles (e.g., homepage-container)
+import  "../styles/BillPage.css"; // Importing BillPage.css for specific layout/overrides
 
 const BillPage = () => {
-  console.log("BillPage component rendered"); 
   const [callLogs, setCallLogs] = useState([]);
   const [messageLogs, setMessageLogs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  // Removed searchTerm state as it's no longer used for UI filtering
   const [loading, setLoading] = useState(false);
-  const [clientName, setClientName] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [clientName, setClientName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const navigate = useNavigate();
-  const billingRate = 4.00; // $4.00 per minute
+  const billingRatePerMinute = 4.0; // $4.00 per minute for calls
+  const billingRatePerWord = 2.0; // $2.00 per word for messages
 
   useEffect(() => {
-    console.log("BillPage useEffect is running"); 
     fetchData();
   }, []);
 
   const fetchData = async () => {
     setLoading(true);
-    console.log("BillPage fetchData is running"); 
     try {
-      let callQuery = supabase.from('CallLogs').select('*').order('starttime', { ascending: false });
+      let callQuery = supabase
+        .from("CallLogs")
+        .select("*")
+        .order("starttime", { ascending: false });
 
       if (startDate) {
-        callQuery = callQuery.gte('starttime', startDate);
+        callQuery = callQuery.gte("starttime", startDate);
       }
       if (endDate) {
-        callQuery = callQuery.lte('endtime', endDate); // Use endtime for calls
+        callQuery = callQuery.lte("endtime", endDate);
       }
 
       if (clientName) {
-        callQuery = callQuery.eq('name', clientName);
+        callQuery = callQuery.eq("name", clientName);
+      }
+      if (phoneNumber) {
+        callQuery = callQuery.eq("phone_number", phoneNumber);
       }
 
       const { data: calls, error: callError } = await callQuery;
-      if (callError) throw callError;
+      if (callError) {
+        console.error("Error fetching call logs:", callError);
+        throw callError;
+      }
 
-      let messageQuery = supabase.from('MessageLogs').select('*').order('senttime', { ascending: false });
+      let messageQuery = supabase
+        .from("MessageLogs")
+        .select("*")
+        .order("senttime", { ascending: false });
       if (startDate) {
-        messageQuery = messageQuery.gte('senttime', startDate);
+        messageQuery = messageQuery.gte("senttime", startDate);
       }
       if (endDate) {
-        messageQuery = messageQuery.lte('senttime', endDate); //  Use senttime for messages, there is no endtime
+        messageQuery = messageQuery.lte("senttime", endDate);
       }
 
       if (clientName) {
-        messageQuery = messageQuery.eq('whomessaged', clientName);
+        messageQuery = messageQuery.eq("whomessaged", clientName);
+      }
+      if (phoneNumber) {
+        messageQuery = messageQuery.eq("phone_number", phoneNumber);
       }
 
       const { data: messages, error: msgError } = await messageQuery;
-      if (msgError) throw msgError;
+      if (msgError) {
+        console.error("Error fetching message logs:", msgError);
+        throw msgError;
+      }
 
       setCallLogs(calls || []);
       setMessageLogs(messages || []);
     } catch (error) {
-      console.error('Error fetching logs:', error);
+      // General error handling if needed
     } finally {
       setLoading(false);
     }
@@ -71,260 +89,188 @@ const BillPage = () => {
     const grouped = {};
 
     callLogs.forEach((call) => {
-      const client = call.name || 'Unknown';
+      const client = call.name || "Unknown";
       if (!grouped[client]) {
-        grouped[client] = { calls: [], messages: [], totalCallDuration: 0, callBillableAmount: 0, totalMessageCount: 0 };
+        grouped[client] = {
+          calls: [],
+          messages: [],
+          totalCallDuration: 0,
+          callBillableAmount: 0,
+          totalMessageWords: 0, // New: to store total words from messages
+          messageBillableAmount: 0, // New: to store billable amount for messages
+          totalFees: 0, // New: combined fees
+          phoneNumber: call.phone_number || 'N/A'
+        };
       }
       grouped[client].calls.push(call);
       grouped[client].totalCallDuration += call.duration || 0;
-      grouped[client].callBillableAmount = (grouped[client].totalCallDuration / 60) * billingRate; // Calculate bill
+      grouped[client].callBillableAmount =
+        (grouped[client].totalCallDuration / 60) * billingRatePerMinute;
     });
 
     messageLogs.forEach((msg) => {
-      const client = msg.whomessaged || 'Unknown';
+      const client = msg.whomessaged || "Unknown";
       if (!grouped[client]) {
-        grouped[client] = { calls: [], messages: [], totalCallDuration: 0, callBillableAmount: 0, totalMessageCount: 0};
+        grouped[client] = {
+          calls: [],
+          messages: [],
+          totalCallDuration: 0,
+          callBillableAmount: 0,
+          totalMessageWords: 0,
+          messageBillableAmount: 0,
+          totalFees: 0,
+          phoneNumber: msg.phone_number || 'N/A'
+        };
       }
       grouped[client].messages.push(msg);
-      grouped[client].totalMessageCount += 1; // Count messages
+      grouped[client].totalMessageWords += msg.wordcount || 0; // Sum word count
+      grouped[client].messageBillableAmount =
+        grouped[client].totalMessageWords * billingRatePerWord; // Calculate message fees
     });
+
+    // Calculate total fees for each client
+    Object.keys(grouped).forEach(client => {
+        grouped[client].totalFees = grouped[client].callBillableAmount + grouped[client].messageBillableAmount;
+    });
+
     return grouped;
   };
 
-  const filteredGroupedLogs = () => {
-      const grouped = groupByClient();
-      const filtered = {};
-      Object.entries(grouped).forEach(([client, data]) => {
-          const matchesClient = client.toLowerCase().includes(searchTerm.toLowerCase());
-          const filteredCalls = data.calls.filter(call =>
-              call.name?.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-          const filteredMessages = data.messages.filter(msg =>
-              msg.whomessaged?.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-          if (matchesClient || filteredCalls.length > 0 || filteredMessages.length > 0) {
-              filtered[client] = {
-                  calls: filteredCalls,
-                  messages: filteredMessages,
-                  totalCallDuration: filteredCalls.reduce((sum, call) => sum + (call.duration || 0), 0),
-                  callBillableAmount: filteredCalls.reduce((sum, call) => sum + ((call.duration || 0) / 60) * billingRate, 0),
-                  totalMessageCount: data.messages.length,
-              };
-          }
-      });
-      return grouped;
-  };
-
-  const formatDateTime = (timestamp) => {
-    return new Date(timestamp).toLocaleString('en-GB');
-  };
-
   const formatDuration = (seconds) => {
-    if (!seconds) return 'N/A';
+    if (!seconds) return "0 minute 0 second"; // Changed N/A to 0 minute 0 second
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+    return `${minutes} minute ${remainingSeconds} second`;
   };
 
-  const groupedLogs = filteredGroupedLogs();
-  const totalBillableTime = Object.values(groupedLogs).reduce(
-    (sum, group) => sum + group.totalCallDuration,
-    0
-  );
-  const totalBillAmount = Object.values(groupedLogs).reduce(
-    (sum, group) => sum + group.callBillableAmount,
-    0
-  );
-  const totalMessages = Object.values(groupedLogs).reduce(
-        (sum, group) => sum + group.totalMessageCount,
-        0
-    );
+  const groupedLogs = groupByClient();
 
   return (
-    <Container fluid className="homepage-container">
-      <Row>
-        <Col md={2}>
-          <Sidebar />
-        </Col>
-        <Col md={10}>
-          <main className="main-section">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h1 className="page-title">Billing and Time Tracking</h1>
-              <Button
-                variant="primary"
-                onClick={() => navigate('/')}
-                className="gradient-button"
-              >
-                Back to Home
-              </Button>
-            </div>
+    <div className="homepage-container"> {/* Uses homepage-container from HomePage.css */}
+      <Sidebar />
+      <main className="main-section centered-content"> {/* main-section for content area, centered-content for centering */}
+        <div className="page-header-area">
+          <h1 className="page-title">Billing:</h1> {/* Updated title as per image */}
+          <Button
+            variant="primary"
+            onClick={() => navigate("/")}
+            className="home-button"
+          >
+            Home
+          </Button>
+        </div>
 
-            <Row className="mb-4">
-              <Col md={4}>
+        <Card className="filter-card shadow-sm mb-4">
+          <Card.Body>
+            <Row className="mb-3">
+              <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Client Name</Form.Label>
+                  <Form.Label>Name:</Form.Label> {/* Label as per image */}
                   <Form.Control
                     type="text"
-                    placeholder="Filter by Client Name"
+                    placeholder=""
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
-                    className="pastel-input"
+                    className="form-input"
                   />
                 </Form.Group>
               </Col>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Group>
-                  <Form.Label>Start Date</Form.Label>
+                  <Form.Label>Phone Number:</Form.Label> {/* Label as per image */}
                   <Form.Control
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="pastel-input"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group>
-                  <Form.Label>End Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="pastel-input"
+                    type="text"
+                    placeholder=""
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="form-input"
                   />
                 </Form.Group>
               </Col>
             </Row>
-            <Button onClick={fetchData} className="mb-4 gradient-button">
-              Apply Filters
-            </Button>
+            <Row className="mb-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Start Time:</Form.Label> {/* Label as per image */}
+                  <Form.Control
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>End Time:</Form.Label> {/* Label as per image */}
+                  <Form.Control
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="button-group">
+              <Button onClick={fetchData} className="apply-button">
+                Apply
+              </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={() => {
+                  setClientName("");
+                  setPhoneNumber("");
+                  setStartDate("");
+                  setEndDate("");
+                  fetchData(); // Re-fetch data after clearing filters
+                }}
+                className="clear-button"
+              >
+                Clear
+              </Button>
+            </div>
+          </Card.Body>
+        </Card>
 
-            <Form.Group className="mb-4">
-              <Form.Control
-                type="text"
-                placeholder="Search by client..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pastel-input"
-              />
-            </Form.Group>
-
-            {loading ? (
-              <p className="text-center">Loading logs...</p>
-            ) : (
-              <>
-                {/* Time Allocation Summary */}
-                <Card className="mb-4 shadow-sm">
-                  <Card.Body>
-                    <h2 className="text-xl font-semibold mb-3">Time Allocation Summary</h2>
-                    <Row>
-                      {Object.entries(groupedLogs).map(([client, { totalCallDuration, callBillableAmount, totalMessageCount }]) => (
-                        <Col key={client} md={4} className="mb-3">
-                          <Card className="shadow-sm">
-                            <Card.Body>
-                              <Card.Title className="text-lg">{client}</Card.Title>
-                              <Card.Text>
-                                Total Call Time: {formatDuration(totalCallDuration)}
-                              </Card.Text>
-                              <Card.Text>
-                                Call Billable Amount: ${callBillableAmount.toFixed(2)}
-                              </Card.Text>
-                              <Card.Text>
-                                Total Messages: {totalMessageCount}
-                              </Card.Text>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
-                    <p className="mt-3 font-semibold">
-                      Total Billable Time: {formatDuration(totalBillableTime)}
-                    </p>
-                    <p className="mt-3 font-semibold">
-                      Total Call Bill Amount: ${totalBillAmount.toFixed(2)}
-                    </p>
-                    <p className="mt-3 font-semibold">
-                        Total Messages: {totalMessages}
-                    </p>
-                  </Card.Body>
-                </Card>
-
-                {/* Client Interaction Logs */}
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <h2 className="text-xl font-semibold mb-3">Client Interaction Logs</h2>
-                    {Object.entries(groupedLogs).map(([client, { calls, messages }]) => (
-                      <div key={client} className="mb-5">
-                        <h3 className="text-lg font-medium mb-2">{client}</h3>
-                        <Table striped bordered hover className="styled-table">
-                          <thead>
-                            <tr>
-                              <th>Type</th>
-                              <th>Client</th>
-                              <th>Timestamp</th>
-                              <th>Duration</th>
-                              <th>Details</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {calls.map((call) => (
-                              <tr key={call.cid}>
-                                <td>Call</td>
-                                <td>{call.name}</td>
-                                <td>{formatDateTime(call.starttime)}</td>
-                                <td>{formatDuration(call.duration)}</td>
-                                <td>{call.type}</td>
-                              </tr>
-                            ))}
-                            {messages.map((msg) => (
-                              <tr key={msg.cmid}>
-                                <td>Message</td>
-                                <td>{msg.whomessaged}</td>
-                                <td>{formatDateTime(msg.senttime)}</td>
-                                <td>N/A</td>
-                                <td>Word Count: {msg.wordcount}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
+        {loading ? (
+          <p className="text-center">Loading bill summary...</p>
+        ) : (
+          <>
+            {/* Bill Summary Section */}
+            <Card className="bill-summary-card shadow-sm">
+              <Card.Body>
+                <h2 className="bill-summary-title">
+                  Bill Summary
+                </h2>
+                {Object.keys(groupedLogs).length > 0 ? (
+                  Object.entries(groupedLogs).map(
+                    ([
+                      client,
+                      {
+                        totalCallDuration,
+                        totalMessageWords, // Use totalMessageWords
+                        totalFees, // Use totalFees
+                        phoneNumber: clientPhoneNumber
+                      },
+                    ]) => (
+                      <div key={client} className="client-bill-details mb-4">
+                        <p className="summary-item">Name: <span className="summary-value">{client}</span></p>
+                        <p className="summary-item">Phone Number: <span className="summary-value">{clientPhoneNumber}</span></p>
+                        <p className="summary-item">Total Time Calling: <span className="summary-value">{formatDuration(totalCallDuration)}</span></p>
+                        <p className="summary-item">Total Message: <span className="summary-value">{totalMessageWords} words</span></p>
+                        <p className="summary-item">Fees: <span className="summary-value">${totalFees.toFixed(2)}</span></p>
                       </div>
-                    ))}
-                    {Object.keys(groupedLogs).length === 0 && (
-                      <p className="text-center">No logs found.</p>
-                    )}
-                  </Card.Body>
-                </Card>
-              </>
-            )}
-          </main>
-        </Col>
-      </Row>
-    </Container>
-  );
-};
-
-// Placeholder for the Sidebar component
-const Sidebar = () => {
-  return (
-    <div className="sidebar">
-      {/* Sidebar content */}
-      <ul className="nav flex-column">
-        <li className="nav-item">
-          <a className="nav-link active" href="#">
-            Dashboard
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link" href="#">
-            Clients
-          </a>
-        </li>
-        <li className="nav-item">
-          <a className="nav-link" href="#">
-            Billing
-          </a>
-        </li>
-      </ul>
+                    )
+                  )
+                ) : (
+                  <p className="text-center">No billing data found for the selected criteria.</p>
+                )}
+              </Card.Body>
+            </Card>
+          </>
+        )}
+      </main>
     </div>
   );
 };
