@@ -1,0 +1,204 @@
+/* LandingPage.css */
+
+/* Main container layout */
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-section {
+  flex: 1;
+  display: flex;
+  background: linear-gradient(to bottom right, #fdf7ff, #f3ecff);
+  font-family: 'Poppins', sans-serif;
+}
+
+.admin-header {
+  color: #6e2f9c;
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  margin: 0; 
+  padding-top: 1rem; 
+  position: relative; 
+  top: -1rem;
+  letter-spacing: 1px;
+}
+.center-content {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  padding-top: 0; 
+}
+
+.white-box-container {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 50px rgba(150, 100, 180, 0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+.landing-card {
+  padding: 0; 
+  border-radius: 0; 
+  background-color: transparent; 
+  border: none;
+  max-width: 100%; 
+  width: 100%;
+  box-shadow: none; 
+}
+
+/* Title styling */
+.landing-title {
+  color: #6e2f9c;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+/* Vertical button grid */
+.button-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  align-items: center;
+}
+
+/* Purple oval button styling */
+.oval-button {
+  width: 100%;
+  max-width: 400px;
+  height: 160px;
+  border-radius: 80px;
+  padding: 1.5rem 2rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(110, 47, 156, 0.2);
+  display: flex;
+  justify-content: center;
+  position: relative;
+  background: #6e2f9c;
+  color: white;
+}
+
+/* Button content layout */
+.button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 0.5rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.button-icon {
+  font-size: 2rem;
+  color: white;
+}
+
+.button-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.button-text h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.button-text p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.button-text span {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  margin-top: 0.8rem;
+  opacity: 0.9;
+}
+
+/* Hover effects */
+.oval-button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(110, 47, 156, 0.3);
+  background: #5d2887;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .white-box-container {
+    padding: 2rem;
+  }
+
+  .landing-title {
+    font-size: 1.7rem;
+  }
+
+  .oval-button {
+    height: 140px;
+    border-radius: 70px;
+  }
+
+  .button-text h3 {
+    font-size: 1.2rem;
+  }
+
+  .button-text p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .center-content {
+    padding: 1.5rem;
+  }
+
+  .white-box-container {
+    padding: 1.5rem;
+  }
+
+  .landing-title {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .oval-button {
+    height: 120px;
+    border-radius: 60px;
+    padding: 1rem 1.5rem;
+  }
+
+  .button-icon {
+    font-size: 1.8rem;
+  }
+
+  .button-text span {
+    font-size: 1rem;
+  }
+}

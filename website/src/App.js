@@ -15,6 +15,7 @@ import RequestAccountPage from "./pages/RequestAccountPage";
 import HomePage from "./pages/HomePage";
 import AdminPage from "./pages/AdminPage";
 import BillPage from "./pages/BillPage";
+import LandingPage from "./pages/LandingPage";
 
 // Protect routes
 const PrivateRoute = ({ children }) => {
@@ -33,6 +34,8 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/request" element={<RequestAccountPage />} />
           <Route path="/bill" element={<BillPage />} />
+          <Route path="/landing" element={<LandingPage />} />
+
 
           {/* Private Routes */}
           <Route
