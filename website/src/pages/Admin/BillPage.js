@@ -393,7 +393,7 @@ const BillPage = () => {
         {" "}
         {/* main-section for content area, centered-content for centering */}
         <div className="page-header-area">
-          <h1 className="page-title">Billing:</h1>
+          <h1 className="billpage-title">Billing:</h1>
           <Button
             variant="primary"
             onClick={() => navigate("/")}
