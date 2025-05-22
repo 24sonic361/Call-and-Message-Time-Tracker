@@ -51,36 +51,45 @@ const HomePage = () => {
     }
 
     let phoneNumbers = [];
+    let customerMap = {};
 
     if (clientEmails && clientEmails.length > 0) {
       // Fetch matching email from Customers table
-      const { data: customerPhones, error: customerError } = await supabase
+      const { data: customerData, error: customerError } = await supabase
         .from('Customers')
-        .select('phonenumber')
+        .select('phonenumber, fullname')
         .eq('managedby', clientEmails[0].email);
 
       if (customerError) {
-        console.error('Error fetching customer phonenumber:', customerError);
+        console.error('Error fetching customer data:', customerError);
         setCallLogs([]);
         setMessageLogs([]);
         return;
       }
 
-      phoneNumbers = customerPhones.map((customer) => customer.phonenumber);
+      phoneNumbers = customerData.map((customer) => customer.phonenumber);
+      customerMap = customerData.reduce((map, customer) => {
+        map[customer.phonenumber] = customer.fullname;
+        return map;
+      }, {});
     } else {
-      // No email match (admin case), fetch all customer phonenumbers
-      const { data: allCustomerPhones, error: allCustomerError } = await supabase
+      // No email match (admin case), fetch all customer phonenumbers and fullnames
+      const { data: allCustomerData, error: allCustomerError } = await supabase
         .from('Customers')
-        .select('phonenumber');
+        .select('phonenumber, fullname');
 
       if (allCustomerError) {
-        console.error('Error fetching all customer phonenumbers:', allCustomerError);
+        console.error('Error fetching all customer data:', allCustomerError);
         setCallLogs([]);
         setMessageLogs([]);
         return;
       }
 
-      phoneNumbers = allCustomerPhones.map((customer) => customer.phonenumber);
+      phoneNumbers = allCustomerData.map((customer) => customer.phonenumber);
+      customerMap = allCustomerData.reduce((map, customer) => {
+        map[customer.phonenumber] = customer.fullname;
+        return map;
+      }, {});
     }
 
     // Fetch all client calls
@@ -101,14 +110,24 @@ const HomePage = () => {
       console.error('Error fetching call logs:', callsError);
       setCallLogs([]);
     } else {
-      setCallLogs(calls || []);
+      // Map fullname to call logs
+      const enrichedCalls = calls.map(call => ({
+        ...call,
+        fullname: customerMap[call.whocalled] || 'Unknown'
+      }));
+      setCallLogs(enrichedCalls || []);
     }
 
     if (messagesError) {
       console.error('Error fetching message logs:', messagesError);
       setMessageLogs([]);
     } else {
-      setMessageLogs(messages || []);
+      // Map fullname to message logs
+      const enrichedMessages = messages.map(msg => ({
+        ...msg,
+        fullname: customerMap[msg.whomessaged] || 'Unknown'
+      }));
+      setMessageLogs(enrichedMessages || []);
     }
   }
 
@@ -133,7 +152,7 @@ const HomePage = () => {
       } else if (sortOption === 'longest') {
         sorted.sort((a, b) => (b.wordcount || 0) - (a.wordcount || 0));
       } else if (sortOption === 'shortest') {
-        sorted.sort((a, b) => (a.wordcount || 0) - (b.wordcount || 0));
+        sorted.sort((a, b) => (a.wordcount || 0) - (a.wordcount || 0));
       }
     }
     return sorted;
@@ -320,6 +339,7 @@ const CallsTable = ({ callLogs }) => (
       <tr>
         <th>Imported By</th>
         <th>From</th>
+        <th>Phone</th>
         <th>Type</th>
         <th>Start</th>
         <th>End</th>
@@ -329,7 +349,7 @@ const CallsTable = ({ callLogs }) => (
     <tbody>
       {callLogs.length === 0 ? (
         <tr>
-          <td colSpan="6" className="empty-message">
+          <td colSpan="7" className="empty-message">
             No call data available
           </td>
         </tr>
@@ -337,6 +357,7 @@ const CallsTable = ({ callLogs }) => (
         callLogs.map((call) => (
           <tr key={call.cid}>
             <td>{call.createdby}</td>
+            <td>{call.fullname}</td>
             <td>{call.whocalled}</td>
             <td>{call.type}</td>
             <td>{new Date(call.starttime).toLocaleString()}</td>
@@ -355,6 +376,7 @@ const MessagesTable = ({ messageLogs }) => (
       <tr>
         <th>Imported By</th>
         <th>From</th>
+        <th>Phone</th>
         <th>Sent Time</th>
         <th>Word Count</th>
       </tr>
@@ -362,7 +384,7 @@ const MessagesTable = ({ messageLogs }) => (
     <tbody>
       {messageLogs.length === 0 ? (
         <tr>
-          <td colSpan="4" className="empty-message">
+          <td colSpan="5" className="empty-message">
             No message data available
           </td>
         </tr>
@@ -370,6 +392,7 @@ const MessagesTable = ({ messageLogs }) => (
         messageLogs.map((msg) => (
           <tr key={msg.cmid}>
             <td>{msg.createdby}</td>
+            <td>{msg.fullname}</td>
             <td>{msg.whomessaged}</td>
             <td>{new Date(msg.senttime).toLocaleString()}</td>
             <td>{msg.wordcount}</td>

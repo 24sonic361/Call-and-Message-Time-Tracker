@@ -1,7 +1,7 @@
 // BillPage.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Form, Button, Card, Row, Col } from "react-bootstrap";
+import { Form, Card, Row, Col } from "react-bootstrap";
 import { supabase } from "../../supabaseClient";
 import Sidebar from "../../components/Sidebar";
 import "../../styles/HomePage.css"; // Importing HomePage.css for general styles (e.g., homepage-container)
@@ -392,18 +392,28 @@ const BillPage = () => {
       <main className="billmain-section centered-content">
         {" "}
         {/* main-section for content area, centered-content for centering */}
-        <div className="page-header-area">
-          <h1 className="billpage-title">Billing:</h1>
-          <Button
-            variant="primary"
-            onClick={() => navigate("/")}
-            className="home-button"
-          >
-            Home
-          </Button>
+        <div className="billpage-header-area">
+          <h1 className="billpage-title">Admin - Bill Calculation</h1>
+          <div className="billbutton-group">
+            <button
+              variant="primary"
+              onClick={() => navigate("/")}
+              className="home-button"
+            >
+              Home
+            </button>
+            <button
+              variant="primary"
+              onClick={() => navigate("/user")}
+              className="user-button"
+            >
+              User Management Page
+            </button>
+          </div>
         </div>
         <Card className="filter-card shadow-sm mb-4">
           <Card.Body>
+            <h2 className="bill-summary-title">Filtering</h2>
             <Row className="mb-3">
               <Col md={6}>
                 <Form.Group>
@@ -454,17 +464,17 @@ const BillPage = () => {
                 </Form.Group>
               </Col>
             </Row>
-            <div className="button-group">
-              <Button onClick={handleApplyFilters} className="apply-button">
+            <div className="billbutton-group">
+              <button onClick={handleApplyFilters} className="apply-button">
                 Apply
-              </Button>
-              <Button
+              </button>
+              <button
                 variant="outline-secondary"
                 onClick={handleClearFilters}
                 className="clear-button"
               >
                 Clear
-              </Button>
+              </button>
             </div>
           </Card.Body>
         </Card>
@@ -515,6 +525,7 @@ const BillPage = () => {
                             ${totalFees.toFixed(2)}
                           </span>
                         </p>
+                        <div className="bills-divider"></div>
                       </div>
                     )
                   )
