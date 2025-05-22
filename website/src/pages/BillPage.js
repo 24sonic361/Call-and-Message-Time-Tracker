@@ -1,87 +1,172 @@
-// BillPage.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {Form,Button,Card,Row,Col,} from "react-bootstrap";
+import {Table,Form,Button,Card,Row,Col,} from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 import Sidebar from "../components/Sidebar";
-import  "../styles/HomePage.css"; // Importing HomePage.css for general styles (e.g., homepage-container)
-import  "../styles/BillPage.css"; // Importing BillPage.css for specific layout/overrides
+import "./BillPage.css";
+import Swal from "sweetalert2";
+import { useAuth } from "../AuthProvider"; // Import useAuth
 
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
+  const [messageLogs, setMessageLogs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [name, setname] = useState("");
-  const [whocalled, setPhoneNumber] = useState("");
-  const [starttime, setStartDate] = useState("");
+  const [fullname, setCustomername] = useState(""); // Changed from clientName to fullname
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const navigate = useNavigate();
-  const billingRatePerMinute = 4.0; // $4.00 per minute for calls
-  const [messageLogs, setMessageLogs] = useState([]);
-  const billingRatePerWord = 4.0; // $4.00 per word for messages
-  const [whomessaged, setPhNumber] = useState("");
-  const [senttime, setsenttime] = useState("");
+  const billingRate = 4.0; // $4.00 per minute
+
+  const { currentUser } = useAuth(); // Get current user from AuthProvider
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fullname, phoneNumber, startDate, endDate]); // Updated dependency from clientName to fullname
 
+  // Fetch all calls and messages from customers
   const fetchData = async () => {
     setLoading(true);
     try {
+      let phoneNumbers = [];
+
+      // Logic to fetch phone numbers based on fullname or phoneNumber filter
+      if (fullname || phoneNumber) { // Changed from clientName to fullname
+        let customerQuery = supabase.from('Customers').select('phonenumber');
+        if (fullname) { // Changed from clientName to fullname
+          customerQuery = customerQuery.eq('fullname', fullname); // Filtering by 'fullname' in Customers table
+        }
+        if (phoneNumber) {
+          customerQuery = customerQuery.eq('phonenumber', phoneNumber);
+        }
+
+        const { data: customerData, error: customerError } = await customerQuery;
+
+        if (customerError) {
+          console.error('Error fetching customer phone numbers:', customerError);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to fetch customer details. Please try again.',
+            confirmButtonColor: '#a675b0',
+          });
+          setCallLogs([]);
+          setMessageLogs([]);
+          setLoading(false);
+          return;
+        }
+        phoneNumbers = customerData.map((customer) => customer.phonenumber);
+      } else {
+        // If no specific fullname or phoneNumber is provided, fetch all customer phone numbers
+        const { data: allCustomerPhones, error: allCustomerError } = await supabase
+          .from('Customers')
+          .select('phonenumber');
+
+        if (allCustomerError) {
+          console.error('Error fetching all customer phone numbers:', allCustomerError);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to fetch all customer phone numbers. Please try again.',
+            confirmButtonColor: '#a675b0',
+          });
+          setCallLogs([]);
+          setMessageLogs([]);
+          setLoading(false);
+          return;
+        }
+        phoneNumbers = allCustomerPhones.map((customer) => customer.phonenumber);
+      }
+
+      // Fetch all client calls using the determined phoneNumbers
       let callQuery = supabase
         .from("CallLogs")
         .select("*")
         .order("starttime", { ascending: false });
 
-      if (starttime) {
-        callQuery = callQuery.gte("starttime", starttime);
-      }
-      //if (endDate) {
-      //  callQuery = callQuery.lte("endtime", endDate);
-      //}
-
-      if (name) {
-        callQuery = callQuery.eq("name", name);
-      }
-      if (whocalled) {
-        callQuery = callQuery.eq("phone_number", whocalled);
+      if (phoneNumbers.length > 0) {
+        callQuery = callQuery.in('whocalled', phoneNumbers);
+      } else if (fullname || phoneNumber) { // Changed from clientName to fullname
+        // If specific client/phone was searched but no matching phoneNumbers found
+        setCallLogs([]);
+        setMessageLogs([]);
+        setLoading(false);
+        return;
       }
 
-      const { data: calls, error: callError } = await callQuery;
-      if (callError) {
-        console.error("Error fetching call logs:", callError);
-        throw callError;
+
+      if (startDate) {
+        callQuery = callQuery.gte("starttime", startDate);
+      }
+      if (endDate) {
+        callQuery = callQuery.lte("endtime", endDate);
       }
 
+      const { data: calls, error: callsError } = await callQuery;
+      if (callsError) {
+        console.error("Error fetching call logs:", callsError);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to fetch call logs. Please try again.",
+          confirmButtonColor: "#a675b0",
+        });
+        setCallLogs([]);
+        setMessageLogs([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch all client messages using the determined phoneNumbers
       let messageQuery = supabase
         .from("MessageLogs")
         .select("*")
         .order("senttime", { ascending: false });
 
-      if (senttime) {
-        messageQuery = messageQuery.gte("senttime", senttime);
+      if (phoneNumbers.length > 0) {
+        messageQuery = messageQuery.in('whomessaged', phoneNumbers);
+      } else if (fullname || phoneNumber) { // Changed from clientName to fullname
+        // If specific client/phone was searched but no matching phoneNumbers found
+        setCallLogs([]);
+        setMessageLogs([]);
+        setLoading(false);
+        return;
+      }
+
+      if (startDate) {
+        messageQuery = messageQuery.gte("senttime", startDate);
       }
       if (endDate) {
         messageQuery = messageQuery.lte("senttime", endDate);
       }
 
-      if (whomessaged) {
-        messageQuery = messageQuery.eq("whomessaged", PhNumber);
-      }
-      //if () {
-      //  messageQuery = messageQuery.eq("phone_number", phoneNumber);
-      //}
-
-      const { data: messages, error: msgError } = await messageQuery;
-      if (msgError) {
-        console.error("Error fetching message logs:", msgError);
-        throw msgError;
+      const { data: messages, error: messagesError } = await messageQuery;
+      if (messagesError) {
+        console.error("Error fetching message logs:", messagesError);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to fetch message logs. Please try again.",
+          confirmButtonColor: "#a675b0",
+        });
+        setCallLogs([]);
+        setMessageLogs([]);
+        setLoading(false);
+        return;
       }
 
       setCallLogs(calls || []);
       setMessageLogs(messages || []);
+
     } catch (error) {
-      // General error handling if needed
+      console.error("An unexpected error occurred in fetchData:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An unexpected error occurred. Please try again.",
+        confirmButtonColor: "#a675b0",
+      });
     } finally {
       setLoading(false);
     }
@@ -91,182 +176,306 @@ const BillPage = () => {
     const grouped = {};
 
     callLogs.forEach((call) => {
-      const client = call.name || "Unknown";
+      const client = call.name || "Unknown"; // 'name' from CallLogs is assumed to be the customer's full name
       if (!grouped[client]) {
         grouped[client] = {
           calls: [],
           messages: [],
           totalCallDuration: 0,
           callBillableAmount: 0,
-          totalMessageWords: 0, // New: to store total words from messages
-          messageBillableAmount: 0, // New: to store billable amount for messages
-          totalFees: 0, // New: combined fees
-          phoneNumber: call.phone_number || 'N/A'
+          totalMessageCount: 0,
         };
       }
       grouped[client].calls.push(call);
       grouped[client].totalCallDuration += call.duration || 0;
       grouped[client].callBillableAmount =
-        (grouped[client].totalCallDuration / 60) * billingRatePerMinute;
+        (grouped[client].totalCallDuration / 60) * billingRate;
     });
 
     messageLogs.forEach((msg) => {
-      const client = msg.whomessaged || "Unknown";
+      const client = msg.whomessaged || "Unknown"; // 'whomessaged' from MessageLogs is assumed to be the customer's full name
       if (!grouped[client]) {
         grouped[client] = {
           calls: [],
           messages: [],
           totalCallDuration: 0,
           callBillableAmount: 0,
-          totalMessageWords: 0,
-          messageBillableAmount: 0,
-          totalFees: 0,
-          phoneNumber: msg.phone_number || 'N/A'
+          totalMessageCount: 0,
         };
       }
       grouped[client].messages.push(msg);
-      grouped[client].totalMessageWords += msg.wordcount || 0; // Sum word count
-      grouped[client].messageBillableAmount =
-        grouped[client].totalMessageWords * billingRatePerWord; // Calculate message fees
+      grouped[client].totalMessageCount += 1;
     });
-
-    // Calculate total fees for each client
-    Object.keys(grouped).forEach(client => {
-        grouped[client].totalFees = grouped[client].callBillableAmount + grouped[client].messageBillableAmount;
-    });
-
     return grouped;
   };
 
-  const formatDuration = (seconds) => {
-    if (!seconds) return "0 minute 0 second"; // Changed N/A to 0 minute 0 second
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes} minute ${remainingSeconds} second`;
+  const filteredGroupedLogs = () => {
+    const grouped = groupByClient();
+    const filtered = {};
+    Object.entries(grouped).forEach(([client, data]) => {
+      const matchesClient = client.toLowerCase().includes(searchTerm.toLowerCase());
+      const filteredCalls = data.calls.filter((call) =>
+        call.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      const filteredMessages = data.messages.filter((msg) =>
+        msg.whomessaged?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (
+        matchesClient ||
+        filteredCalls.length > 0 ||
+        filteredMessages.length > 0
+      ) {
+        filtered[client] = {
+          calls: filteredCalls,
+          messages: filteredMessages,
+          totalCallDuration: filteredCalls.reduce(
+            (sum, call) => sum + (call.duration || 0),
+            0
+          ),
+          callBillableAmount: filteredCalls.reduce(
+            (sum, call) => sum + ((call.duration || 0) / 60) * billingRate,
+            0
+          ),
+          totalMessageCount: data.messages.length,
+        };
+      }
+    });
+    return filtered;
   };
 
-  const groupedLogs = groupByClient();
+  const formatDateTime = (timestamp) => {
+    return new Date(timestamp).toLocaleString("en-GB");
+  };
+
+  const formatDuration = (seconds) => {
+    if (!seconds) return "N/A";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+  };
+
+  const handleApplyFilters = () => {
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Date Range',
+        text: 'End date cannot be earlier than start date.',
+        confirmButtonColor: '#a675b0',
+      });
+      return;
+    }
+    fetchData(); // Trigger data fetch with current filter states
+  };
+
+  const handleClearFilters = () => {
+    setCustomername(''); // Changed from setClientName to setCustomername
+    setPhoneNumber('');
+    setStartDate('');
+    setEndDate('');
+    setSearchTerm(''); // Clear search term as well
+    // fetchData will be triggered by the useEffect due to state changes
+  };
+
+  const groupedLogs = filteredGroupedLogs();
+  const totalBillableTime = Object.values(groupedLogs).reduce(
+    (sum, group) => sum + group.totalCallDuration,
+    0
+  );
+  const totalBillAmount = Object.values(groupedLogs).reduce(
+    (sum, group) => sum + group.callBillableAmount,
+    0
+  );
+  const totalMessages = Object.values(groupedLogs).reduce(
+    (sum, group) => sum + group.totalMessageCount,
+    0
+  );
 
   return (
-    <div className="homepage-container"> {/* Uses homepage-container from HomePage.css */}
+    <div className="billpage-container">
       <Sidebar />
-      <main className="main-section centered-content"> {/* main-section for content area, centered-content for centering */}
-        <div className="page-header-area">
-          <h1 className="page-title">Billing:</h1> {/* Updated title as per image */}
+      <main className="main-section">
+        <div className="d-flex justify-content-between align-items-center mb-4 page-title-area">
+          <h1 className="page-title">Billing and Time Tracking</h1>
           <Button
             variant="primary"
             onClick={() => navigate("/")}
-            className="home-button"
+            className="gradient-button"
           >
-            Home
+            Back to Home
           </Button>
         </div>
 
-        <Card className="filter-card shadow-sm mb-4">
-          <Card.Body>
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Name:</Form.Label> {/* Label as per image */}
-                  <Form.Control
-                    type="text"
-                    placeholder=""
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    className="form-input"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Phone Number:</Form.Label> {/* Label as per image */}
-                  <Form.Control
-                    type="text"
-                    placeholder=""
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="form-input"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Start Time:</Form.Label> {/* Label as per image */}
-                  <Form.Control
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="form-input"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>End Time:</Form.Label> {/* Label as per image */}
-                  <Form.Control
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="form-input"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <div className="button-group">
-              <Button onClick={fetchData} className="apply-button">
-                Apply
-              </Button>
-              <Button
-                variant="outline-secondary"
-                onClick={() => {
-                  setClientName("");
-                  setPhoneNumber("");
-                  setStartDate("");
-                  setEndDate("");
-                  fetchData(); // Re-fetch data after clearing filters
-                }}
-                className="clear-button"
-              >
-                Clear
-              </Button>
-            </div>
-          </Card.Body>
-        </Card>
+        <Row className="mb-4 filter-section">
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Customer Name</Form.Label> {/* Label updated */}
+              <Form.Control
+                type="text"
+                placeholder="Filter by Customer Name"
+                value={fullname} // Changed from clientName to fullname
+                onChange={(e) => setCustomername(e.target.value)} // Changed from setClientName to setCustomername
+                className="pastel-input"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Phone Number</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Filter by Phone Number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="pastel-input"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>Start Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="pastel-input"
+              />
+            </Form.Group>
+          </Col>
+          <Col md={3}>
+            <Form.Group>
+              <Form.Label>End Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="pastel-input"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <div className="d-flex mb-4">
+            <Button onClick={handleApplyFilters} className="gradient-button me-2">
+              Apply Filters
+            </Button>
+            <Button onClick={handleClearFilters} variant="secondary">
+              Clear Filters
+            </Button>
+        </div>
+
+
+        <Form.Group className="mb-4 search-bar">
+          <Form.Control
+            type="text"
+            placeholder="Search by customer..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pastel-input"
+          />
+        </Form.Group>
 
         {loading ? (
-          <p className="text-center">Loading bill summary...</p>
+          <p className="text-center">Loading logs...</p>
         ) : (
           <>
-            {/* Bill Summary Section */}
-            <Card className="bill-summary-card shadow-sm">
+            {/* Time Allocation Summary */}
+            <Card className="mb-4 shadow-sm time-allocation-summary">
               <Card.Body>
-                <h2 className="bill-summary-title">
-                  Bill Summary
+                <h2 className="text-xl font-semibold mb-3">
+                  Time Allocation Summary
                 </h2>
-                {Object.keys(groupedLogs).length > 0 ? (
-                  Object.entries(groupedLogs).map(
+                <Row>
+                  {Object.entries(groupedLogs).map(
                     ([
                       client,
                       {
                         totalCallDuration,
-                        totalMessageWords, // Use totalMessageWords
-                        totalFees, // Use totalFees
-                        phoneNumber: clientPhoneNumber
+                        callBillableAmount,
+                        totalMessageCount,
                       },
                     ]) => (
-                      <div key={client} className="client-bill-details mb-4">
-                        <p className="summary-item">Name: <span className="summary-value">{client}</span></p>
-                        <p className="summary-item">Phone Number: <span className="summary-value">{clientPhoneNumber}</span></p>
-                        <p className="summary-item">Total Time Calling: <span className="summary-value">{formatDuration(totalCallDuration)}</span></p>
-                        <p className="summary-item">Total Message: <span className="summary-value">{totalMessageWords} words</span></p>
-                        <p className="summary-item">Fees: <span className="summary-value">${totalFees.toFixed(2)}</span></p>
-                      </div>
+                      <Col key={client} md={4} className="mb-3">
+                        <Card className="client-summary-card shadow-sm">
+                          <Card.Body>
+                            <Card.Title className="text-lg">
+                              {client}
+                            </Card.Title>
+                            <Card.Text>
+                              Total Call Time:{" "}
+                              {formatDuration(totalCallDuration)}
+                            </Card.Text>
+                            <Card.Text>
+                              Call Billable Amount: $
+                              {callBillableAmount.toFixed(2)}
+                            </Card.Text>
+                            <Card.Text>
+                              Total Messages: {totalMessageCount}
+                            </Card.Text>
+                          </Card.Body>
+                        </Card>
+                      </Col>
                     )
+                  )}
+                </Row>
+                <p className="mt-3 font-semibold">
+                  Total Billable Time: {formatDuration(totalBillableTime)}
+                </p>
+                <p className="mt-3 font-semibold">
+                  Total Call Bill Amount: ${totalBillAmount.toFixed(2)}
+                </p>
+                <p className="mt-3 font-semibold">
+                  Total Messages: {totalMessages}
+                </p>
+              </Card.Body>
+            </Card>
+
+            {/* Client Interaction Logs */}
+            <Card className="shadow-sm client-interaction-logs">
+              <Card.Body>
+                <h2 className="text-xl font-semibold mb-3">
+                  Client Interaction Logs
+                </h2>
+                {Object.entries(groupedLogs).map(
+                  ([client, { calls, messages }]) => (
+                    <div key={client} className="mb-5">
+                      <h3 className="text-lg font-medium mb-2">{client}</h3>
+                      <div className="table-container">
+                        <table className="client-interaction-table">
+                          <thead>
+                            <tr>
+                              <th>Type</th>
+                              <th>Customer</th>
+                              <th>Timestamp</th>
+                              <th>Duration</th>
+                              <th>Details</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {calls.map((call) => (
+                              <tr key={call.cid}>
+                                <td>Call</td>
+                                <td>{call.name}</td>
+                                <td>{formatDateTime(call.starttime)}</td>
+                                <td>{formatDuration(call.duration)}</td>
+                                <td>{call.type}</td>
+                              </tr>
+                            ))}
+                            {messages.map((msg) => (
+                              <tr key={msg.cmid}>
+                                <td>Message</td>
+                                <td>{msg.whomessaged}</td>
+                                <td>{formatDateTime(msg.senttime)}</td>
+                                <td>N/A</td>
+                                <td>Word Count: {msg.wordcount}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   )
-                ) : (
-                  <p className="text-center">No billing data found for the selected criteria.</p>
+                )}
+                {Object.keys(groupedLogs).length === 0 && (
+                  <p className="text-center no-logs-message">No logs found.</p>
                 )}
               </Card.Body>
             </Card>
