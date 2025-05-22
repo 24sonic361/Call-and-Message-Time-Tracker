@@ -1,100 +1,123 @@
+// BillPage.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {Table,Form,Button,Card,Row,Col,} from "react-bootstrap";
+import { Form, Button, Card, Row, Col } from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 import Sidebar from "../components/Sidebar";
-import "../styles/BillPage.css";
-import Swal from "sweetalert2";
-import { useAuth } from "../AuthProvider"; // Import useAuth
+import "../styles/HomePage.css"; // Importing HomePage.css for general styles (e.g., homepage-container)
+import "../styles/BillPage.css"; // Importing BillPage.css for specific layout/overrides
+import Swal from "sweetalert2"; // For user-friendly alerts
+import { useAuth } from '../AuthProvider'; // Assuming AuthProvider gives access to current user details
 
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
   const [messageLogs, setMessageLogs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fullname, setCustomername] = useState(""); // Changed from clientName to fullname
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+
+  // Filter states for UI inputs
+  const [customerName, setCustomerName] = useState(""); // For "Name" input
+  const [phoneNumberFilter, setPhoneNumberFilter] = useState(""); // For "Phone Number" input
+  const [startDate, setStartDate] = useState(""); // For "Start Time" input
+  const [endDate, setEndDate] = useState(""); // For "End Time" input
+
   const navigate = useNavigate();
-  const billingRate = 4.0; // $4.00 per minute
+  const billingRatePerMinute = 4.0; // $4.00 per minute for calls
+  const billingRatePerWord = 4.0; // $4.00 per word for messages
 
-  const { currentUser } = useAuth(); // Get current user from AuthProvider
+  const { currentUser } = useAuth(); // Get current user from AuthProvider (if needed for user-specific data)
 
+  // useEffect hook to fetch data when component mounts or filter states change
   useEffect(() => {
     fetchData();
-  }, [fullname, phoneNumber, startDate, endDate]); // Updated dependency from clientName to fullname
+  }, [customerName, phoneNumberFilter, startDate, endDate]); // Dependencies for re-fetching
 
   // Fetch all calls and messages from customers
   const fetchData = async () => {
     setLoading(true);
     try {
-      let phoneNumbers = [];
+      let targetPhoneNumbers = [];
+      let customerPhoneToNameMap = {}; // Map to store phone number -> fullname
 
-      // Logic to fetch phone numbers based on fullname or phoneNumber filter
-      if (fullname || phoneNumber) { // Changed from clientName to fullname
-        let customerQuery = supabase.from('Customers').select('phonenumber');
-        if (fullname) { // Changed from clientName to fullname
-          customerQuery = customerQuery.eq('fullname', fullname); // Filtering by 'fullname' in Customers table
-        }
-        if (phoneNumber) {
-          customerQuery = customerQuery.eq('phonenumber', phoneNumber);
-        }
+      // --- Step 1: Get a mapping of all customer phone numbers to their full names ---
+      const { data: allCustomers, error: allCustomersError } = await supabase
+        .from('Customers')
+        .select('phonenumber, fullname');
 
-        const { data: customerData, error: customerError } = await customerQuery;
-
-        if (customerError) {
-          console.error('Error fetching customer phone numbers:', customerError);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to fetch customer details. Please try again.',
-            confirmButtonColor: '#a675b0',
-          });
-          setCallLogs([]);
-          setMessageLogs([]);
-          setLoading(false);
-          return;
-        }
-        phoneNumbers = customerData.map((customer) => customer.phonenumber);
-      } else {
-        // If no specific fullname or phoneNumber is provided, fetch all customer phone numbers
-        const { data: allCustomerPhones, error: allCustomerError } = await supabase
-          .from('Customers')
-          .select('phonenumber');
-
-        if (allCustomerError) {
-          console.error('Error fetching all customer phone numbers:', allCustomerError);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to fetch all customer phone numbers. Please try again.',
-            confirmButtonColor: '#a675b0',
-          });
-          setCallLogs([]);
-          setMessageLogs([]);
-          setLoading(false);
-          return;
-        }
-        phoneNumbers = allCustomerPhones.map((customer) => customer.phonenumber);
-      }
-
-      // Fetch all client calls using the determined phoneNumbers
-      let callQuery = supabase
-        .from("CallLogs")
-        .select("*")
-        .order("starttime", { ascending: false });
-
-      if (phoneNumbers.length > 0) {
-        callQuery = callQuery.in('whocalled', phoneNumbers);
-      } else if (fullname || phoneNumber) { // Changed from clientName to fullname
-        // If specific client/phone was searched but no matching phoneNumbers found
+      if (allCustomersError) {
+        console.error('Error fetching all customer names for mapping:', allCustomersError);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to retrieve customer names. Please try again.',
+          confirmButtonColor: '#a675b0',
+        });
         setCallLogs([]);
         setMessageLogs([]);
         setLoading(false);
         return;
       }
 
+      allCustomers.forEach(cust => {
+        customerPhoneToNameMap[cust.phonenumber] = cust.fullname;
+      });
+
+      // --- Step 2: Determine which specific phone numbers to filter logs by, based on user input ---
+      if (customerName || phoneNumberFilter) {
+        // If specific customer name or phone number is provided, filter the Customers table
+        let filteredCustomerQuery = supabase.from('Customers').select('phonenumber');
+
+        if (customerName) {
+          filteredCustomerQuery = filteredCustomerQuery.eq('fullname', customerName);
+        }
+        if (phoneNumberFilter) {
+          filteredCustomerQuery = filteredCustomerQuery.eq('phonenumber', phoneNumberFilter);
+        }
+
+        const { data: filteredCustomerData, error: filteredCustomerError } = await filteredCustomerQuery;
+
+        if (filteredCustomerError) {
+          console.error('Error fetching filtered customer phone numbers:', filteredCustomerError);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to fetch filtered customer details. Please try again.',
+            confirmButtonColor: '#a675b0',
+          });
+          setCallLogs([]);
+          setMessageLogs([]);
+          setLoading(false);
+          return;
+        }
+
+        targetPhoneNumbers = filteredCustomerData.map((customer) => customer.phonenumber);
+
+        // If a specific customer was searched but no match was found, clear logs and return
+        if (targetPhoneNumbers.length === 0) {
+            setCallLogs([]);
+            setMessageLogs([]);
+            setLoading(false);
+            return;
+        }
+
+      } else {
+        // If no specific filter is provided, use all customer phone numbers from the map
+        targetPhoneNumbers = Object.keys(customerPhoneToNameMap);
+      }
+
+      // --- Step 3: Fetch Call Logs using the determined targetPhoneNumbers and date filters ---
+      let callQuery = supabase
+        .from("CallLogs")
+        .select("*")
+        .order("starttime", { ascending: false });
+
+      if (targetPhoneNumbers.length > 0) {
+        callQuery = callQuery.in('whocalled', targetPhoneNumbers); // Filter by the numbers
+      } else { // No phone numbers to filter by, so no logs will be found
+        setCallLogs([]);
+        setMessageLogs([]);
+        setLoading(false);
+        return;
+      }
 
       if (startDate) {
         callQuery = callQuery.gte("starttime", startDate);
@@ -103,9 +126,9 @@ const BillPage = () => {
         callQuery = callQuery.lte("endtime", endDate);
       }
 
-      const { data: calls, error: callsError } = await callQuery;
-      if (callsError) {
-        console.error("Error fetching call logs:", callsError);
+      const { data: calls, error: callError } = await callQuery;
+      if (callError) {
+        console.error("Error fetching call logs:", callError);
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -118,16 +141,15 @@ const BillPage = () => {
         return;
       }
 
-      // Fetch all client messages using the determined phoneNumbers
+      // --- Step 4: Fetch Message Logs using the determined targetPhoneNumbers and date filters ---
       let messageQuery = supabase
         .from("MessageLogs")
         .select("*")
         .order("senttime", { ascending: false });
 
-      if (phoneNumbers.length > 0) {
-        messageQuery = messageQuery.in('whomessaged', phoneNumbers);
-      } else if (fullname || phoneNumber) { // Changed from clientName to fullname
-        // If specific client/phone was searched but no matching phoneNumbers found
+      if (targetPhoneNumbers.length > 0) {
+        messageQuery = messageQuery.in('whomessaged', targetPhoneNumbers); // Filter by the numbers
+      } else { // No phone numbers to filter by, so no logs will be found
         setCallLogs([]);
         setMessageLogs([]);
         setLoading(false);
@@ -141,9 +163,9 @@ const BillPage = () => {
         messageQuery = messageQuery.lte("senttime", endDate);
       }
 
-      const { data: messages, error: messagesError } = await messageQuery;
-      if (messagesError) {
-        console.error("Error fetching message logs:", messagesError);
+      const { data: messages, error: msgError } = await messageQuery;
+      if (msgError) {
+        console.error("Error fetching message logs:", msgError);
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -156,8 +178,10 @@ const BillPage = () => {
         return;
       }
 
-      setCallLogs(calls || []);
-      setMessageLogs(messages || []);
+      // Pass the customerPhoneToNameMap to groupByClient
+      setCallLogs(calls ? calls.map(call => ({ ...call, customerNameFromMap: customerPhoneToNameMap[call.whocalled] })) : []);
+      setMessageLogs(messages ? messages.map(msg => ({ ...msg, customerNameFromMap: customerPhoneToNameMap[msg.whomessaged] })) : []);
+
 
     } catch (error) {
       console.error("An unexpected error occurred in fetchData:", error);
@@ -176,83 +200,77 @@ const BillPage = () => {
     const grouped = {};
 
     callLogs.forEach((call) => {
-      const client = call.name || "Unknown"; // 'name' from CallLogs is assumed to be the customer's full name
-      if (!grouped[client]) {
-        grouped[client] = {
+      // Use the name from the map, falling back to 'Unknown' if not found
+      const clientNameForGrouping = call.customerNameFromMap || call.name || "Unknown";
+      const clientPhoneNumber = call.whocalled || 'N/A';
+
+      if (!grouped[clientNameForGrouping]) {
+        grouped[clientNameForGrouping] = {
           calls: [],
           messages: [],
           totalCallDuration: 0,
           callBillableAmount: 0,
-          totalMessageCount: 0,
+          totalMessageWords: 0,
+          messageBillableAmount: 0,
+          totalFees: 0,
+          phoneNumber: clientPhoneNumber,
         };
       }
-      grouped[client].calls.push(call);
-      grouped[client].totalCallDuration += call.duration || 0;
-      grouped[client].callBillableAmount =
-        (grouped[client].totalCallDuration / 60) * billingRate;
+      grouped[clientNameForGrouping].calls.push(call);
+      grouped[clientNameForGrouping].totalCallDuration += call.duration || 0;
+      grouped[clientNameForGrouping].callBillableAmount =
+        (grouped[clientNameForGrouping].totalCallDuration / 60) * billingRatePerMinute;
+      // Ensure phoneNumber is updated if a call log has a more specific number
+      if (grouped[clientNameForGrouping].phoneNumber === 'N/A' || grouped[clientNameForGrouping].phoneNumber !== clientPhoneNumber) {
+        grouped[clientNameForGrouping].phoneNumber = clientPhoneNumber;
+      }
     });
 
     messageLogs.forEach((msg) => {
-      const client = msg.whomessaged || "Unknown"; // 'whomessaged' from MessageLogs is assumed to be the customer's full name
-      if (!grouped[client]) {
-        grouped[client] = {
+      // Use the name from the map, falling back to 'Unknown' if not found
+      const clientNameForGrouping = msg.customerNameFromMap || msg.whomessaged || "Unknown";
+      const clientPhoneNumber = msg.whomessaged || 'N/A'; // Assuming whomessaged is the phone number
+
+      if (!grouped[clientNameForGrouping]) {
+        grouped[clientNameForGrouping] = {
           calls: [],
           messages: [],
           totalCallDuration: 0,
           callBillableAmount: 0,
-          totalMessageCount: 0,
+          totalMessageWords: 0,
+          messageBillableAmount: 0,
+          totalFees: 0,
+          phoneNumber: clientPhoneNumber,
         };
       }
-      grouped[client].messages.push(msg);
-      grouped[client].totalMessageCount += 1;
+      grouped[clientNameForGrouping].messages.push(msg);
+      grouped[clientNameForGrouping].totalMessageWords += msg.wordcount || 0;
+      grouped[clientNameForGrouping].messageBillableAmount =
+        grouped[clientNameForGrouping].totalMessageWords * billingRatePerWord;
+      // Ensure phoneNumber is updated if a message log has a more specific number
+      if (grouped[clientNameForGrouping].phoneNumber === 'N/A' || grouped[clientNameForGrouping].phoneNumber !== clientPhoneNumber) {
+        grouped[clientNameForGrouping].phoneNumber = clientPhoneNumber;
+      }
     });
+
+    // Calculate total fees for each client
+    Object.keys(grouped).forEach(client => {
+      grouped[client].totalFees = grouped[client].callBillableAmount + grouped[client].messageBillableAmount;
+    });
+
     return grouped;
   };
 
-  const filteredGroupedLogs = () => {
-    const grouped = groupByClient();
-    const filtered = {};
-    Object.entries(grouped).forEach(([client, data]) => {
-      const matchesClient = client.toLowerCase().includes(searchTerm.toLowerCase());
-      const filteredCalls = data.calls.filter((call) =>
-        call.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      const filteredMessages = data.messages.filter((msg) =>
-        msg.whomessaged?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      if (
-        matchesClient ||
-        filteredCalls.length > 0 ||
-        filteredMessages.length > 0
-      ) {
-        filtered[client] = {
-          calls: filteredCalls,
-          messages: filteredMessages,
-          totalCallDuration: filteredCalls.reduce(
-            (sum, call) => sum + (call.duration || 0),
-            0
-          ),
-          callBillableAmount: filteredCalls.reduce(
-            (sum, call) => sum + ((call.duration || 0) / 60) * billingRate,
-            0
-          ),
-          totalMessageCount: data.messages.length,
-        };
-      }
-    });
-    return filtered;
-  };
-
-  const formatDateTime = (timestamp) => {
-    return new Date(timestamp).toLocaleString("en-GB");
-  };
-
   const formatDuration = (seconds) => {
-    if (!seconds) return "N/A";
+    if (seconds === null || seconds === undefined) return "0 minute 0 second";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+    return `${minutes} minute ${remainingSeconds} second`;
   };
+
+  // Removed searchTerm state and filteredGroupedLogs function
+  const groupedLogs = groupByClient();
+
 
   const handleApplyFilters = () => {
     if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
@@ -264,223 +282,141 @@ const BillPage = () => {
       });
       return;
     }
-    fetchData(); // Trigger data fetch with current filter states
+    // fetchData is already triggered by useEffect when filter states change,
+    // so simply letting the state updates trigger it is sufficient.
+    // This button primarily validates dates and then relies on useEffect.
   };
 
   const handleClearFilters = () => {
-    setCustomername(''); // Changed from setClientName to setCustomername
-    setPhoneNumber('');
-    setStartDate('');
-    setEndDate('');
-    setSearchTerm(''); // Clear search term as well
-    // fetchData will be triggered by the useEffect due to state changes
+    setCustomerName("");
+    setPhoneNumberFilter("");
+    setStartDate("");
+    setEndDate("");
+    // Removed setSearchTerm('') as searchTerm state is removed
+    // No need to call fetchData explicitly here, useEffect will handle it
   };
 
-  const groupedLogs = filteredGroupedLogs();
-  const totalBillableTime = Object.values(groupedLogs).reduce(
-    (sum, group) => sum + group.totalCallDuration,
-    0
-  );
-  const totalBillAmount = Object.values(groupedLogs).reduce(
-    (sum, group) => sum + group.callBillableAmount,
-    0
-  );
-  const totalMessages = Object.values(groupedLogs).reduce(
-    (sum, group) => sum + group.totalMessageCount,
-    0
-  );
 
   return (
-    <div className="billpage-container">
+    <div className="homepage-container"> {/* Uses homepage-container from HomePage.css */}
       <Sidebar />
-      <main className="main-section">
-        <div className="d-flex justify-content-between align-items-center mb-4 page-title-area">
-          <h1 className="page-title">Billing and Time Tracking</h1>
+      <main className="main-section centered-content"> {/* main-section for content area, centered-content for centering */}
+        <div className="page-header-area">
+          <h1 className="page-title">Billing:</h1>
           <Button
             variant="primary"
             onClick={() => navigate("/")}
-            className="gradient-button"
+            className="home-button"
           >
-            Back to Home
+            Home
           </Button>
         </div>
 
-        <Row className="mb-4 filter-section">
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label>Customer Name</Form.Label> {/* Label updated */}
-              <Form.Control
-                type="text"
-                placeholder="Filter by Customer Name"
-                value={fullname} // Changed from clientName to fullname
-                onChange={(e) => setCustomername(e.target.value)} // Changed from setClientName to setCustomername
-                className="pastel-input"
-              />
-            </Form.Group>
-          </Col>
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label>Phone Number</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Filter by Phone Number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="pastel-input"
-              />
-            </Form.Group>
-          </Col>
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label>Start Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="pastel-input"
-              />
-            </Form.Group>
-          </Col>
-          <Col md={3}>
-            <Form.Group>
-              <Form.Label>End Date</Form.Label>
-              <Form.Control
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="pastel-input"
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <div className="d-flex mb-4">
-            <Button onClick={handleApplyFilters} className="gradient-button me-2">
-              Apply Filters
-            </Button>
-            <Button onClick={handleClearFilters} variant="secondary">
-              Clear Filters
-            </Button>
-        </div>
-
-
-        <Form.Group className="mb-4 search-bar">
-          <Form.Control
-            type="text"
-            placeholder="Search by customer..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pastel-input"
-          />
-        </Form.Group>
+        <Card className="filter-card shadow-sm mb-4">
+          <Card.Body>
+            <Row className="mb-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Customer Name:</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter customer name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Phone Number:</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter phone number"
+                    value={phoneNumberFilter}
+                    onChange={(e) => setPhoneNumberFilter(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Start Time:</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>End Time:</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <div className="button-group">
+              <Button onClick={handleApplyFilters} className="apply-button">
+                Apply
+              </Button>
+              <Button
+                variant="outline-secondary"
+                onClick={handleClearFilters}
+                className="clear-button"
+              >
+                Clear
+              </Button>
+            </div>
+          </Card.Body>
+        </Card>
 
         {loading ? (
-          <p className="text-center">Loading logs...</p>
+          <p className="text-center">Loading bill summary...</p>
         ) : (
           <>
-            {/* Time Allocation Summary */}
-            <Card className="mb-4 shadow-sm time-allocation-summary">
+            {/* Bill Summary Section */}
+            <Card className="bill-summary-card shadow-sm">
               <Card.Body>
-                <h2 className="text-xl font-semibold mb-3">
-                  Time Allocation Summary
+                <h2 className="bill-summary-title">
+                  Bill Summary
                 </h2>
-                <Row>
-                  {Object.entries(groupedLogs).map(
+                {Object.keys(groupedLogs).length > 0 ? (
+                  Object.entries(groupedLogs).map(
                     ([
-                      client,
+                      client, // This is the customer's fullname from the map
                       {
                         totalCallDuration,
-                        callBillableAmount,
-                        totalMessageCount,
+                        totalMessageWords,
+                        totalFees,
+                        phoneNumber: clientPhoneNumber, // This is the phone number associated with the logs
                       },
                     ]) => (
-                      <Col key={client} md={4} className="mb-3">
-                        <Card className="client-summary-card shadow-sm">
-                          <Card.Body>
-                            <Card.Title className="text-lg">
-                              {client}
-                            </Card.Title>
-                            <Card.Text>
-                              Total Call Time:{" "}
-                              {formatDuration(totalCallDuration)}
-                            </Card.Text>
-                            <Card.Text>
-                              Call Billable Amount: $
-                              {callBillableAmount.toFixed(2)}
-                            </Card.Text>
-                            <Card.Text>
-                              Total Messages: {totalMessageCount}
-                            </Card.Text>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    )
-                  )}
-                </Row>
-                <p className="mt-3 font-semibold">
-                  Total Billable Time: {formatDuration(totalBillableTime)}
-                </p>
-                <p className="mt-3 font-semibold">
-                  Total Call Bill Amount: ${totalBillAmount.toFixed(2)}
-                </p>
-                <p className="mt-3 font-semibold">
-                  Total Messages: {totalMessages}
-                </p>
-              </Card.Body>
-            </Card>
-
-            {/* Client Interaction Logs */}
-            <Card className="shadow-sm client-interaction-logs">
-              <Card.Body>
-                <h2 className="text-xl font-semibold mb-3">
-                  Client Interaction Logs
-                </h2>
-                {Object.entries(groupedLogs).map(
-                  ([client, { calls, messages }]) => (
-                    <div key={client} className="mb-5">
-                      <h3 className="text-lg font-medium mb-2">{client}</h3>
-                      <div className="table-container">
-                        <table className="client-interaction-table">
-                          <thead>
-                            <tr>
-                              <th>Type</th>
-                              <th>Customer</th>
-                              <th>Timestamp</th>
-                              <th>Duration</th>
-                              <th>Details</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {calls.map((call) => (
-                              <tr key={call.cid}>
-                                <td>Call</td>
-                                <td>{call.name}</td>
-                                <td>{formatDateTime(call.starttime)}</td>
-                                <td>{formatDuration(call.duration)}</td>
-                                <td>{call.type}</td>
-                              </tr>
-                            ))}
-                            {messages.map((msg) => (
-                              <tr key={msg.cmid}>
-                                <td>Message</td>
-                                <td>{msg.whomessaged}</td>
-                                <td>{formatDateTime(msg.senttime)}</td>
-                                <td>N/A</td>
-                                <td>Word Count: {msg.wordcount}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div key={client} className="client-bill-details mb-4">
+                        <p className="summary-item">Name: <span className="summary-value">{client}</span></p>
+                        <p className="summary-item">Phone Number: <span className="summary-value">{clientPhoneNumber}</span></p>
+                        <p className="summary-item">Total Time Calling: <span className="summary-value">{formatDuration(totalCallDuration)}</span></p>
+                        <p className="summary-item">Total Message: <span className="summary-value">{totalMessageWords} words</span></p>
+                        <p className="summary-item">Fees: <span className="summary-value">${totalFees.toFixed(2)}</span></p>
                       </div>
-                    </div>
+                    )
                   )
-                )}
-                {Object.keys(groupedLogs).length === 0 && (
-                  <p className="text-center no-logs-message">No logs found.</p>
+                ) : (
+                  <p className="text-center">No billing data found for the selected criteria.</p>
                 )}
               </Card.Body>
             </Card>
           </>
         )}
+        {/* Removed Client Interaction Logs section as requested */}
       </main>
     </div>
   );
