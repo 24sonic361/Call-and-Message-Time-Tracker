@@ -29,6 +29,7 @@ const BillPage = () => {
   // useEffect hook to fetch data when component mounts or filter states change
   // This ensures data is fetched on initial load and whenever filter values change.
   useEffect(() => {
+    console.log("useEffect triggered. Fetching data...");
     fetchData();
   }, [customerName, phoneNumberFilter, startDate, endDate]);
 
@@ -40,7 +41,11 @@ const BillPage = () => {
       let targetPhoneNumbers = [];
       let customerPhoneToNameMap = {}; // Map to store phone number -> fullname
 
+      console.log("--- Starting fetchData ---");
+      console.log("Current Filters:", { customerName, phoneNumberFilter, startDate, endDate });
+
       // --- Step 1: Get a mapping of all customer phone numbers to their full names ---
+      console.log("Fetching all customers for phone-to-name mapping...");
       const { data: allCustomers, error: allCustomersError } = await supabase
         .from('Customers')
         .select('phonenumber, fullname');
@@ -58,21 +63,26 @@ const BillPage = () => {
         setLoading(false);
         return;
       }
+      console.log("All Customers fetched:", allCustomers);
 
       allCustomers.forEach(cust => {
         customerPhoneToNameMap[cust.phonenumber] = cust.fullname;
       });
+      console.log("Customer Phone to Name Map:", customerPhoneToNameMap);
+
 
       // --- Step 2: Determine which specific phone numbers to filter logs by, based on user input ---
       if (customerName || phoneNumberFilter) {
-        // If specific customer name or phone number is provided, filter the Customers table
+        console.log("Filtering customers based on input...");
         let filteredCustomerQuery = supabase.from('Customers').select('phonenumber');
 
         if (customerName) {
           filteredCustomerQuery = filteredCustomerQuery.eq('fullname', customerName);
+          console.log("Filtering by fullname:", customerName);
         }
         if (phoneNumberFilter) {
           filteredCustomerQuery = filteredCustomerQuery.eq('phonenumber', phoneNumberFilter);
+          console.log("Filtering by phonenumber:", phoneNumberFilter);
         }
 
         const { data: filteredCustomerData, error: filteredCustomerError } = await filteredCustomerQuery;
@@ -90,11 +100,13 @@ const BillPage = () => {
           setLoading(false);
           return;
         }
+        console.log("Filtered Customer Data:", filteredCustomerData);
 
         targetPhoneNumbers = filteredCustomerData.map((customer) => customer.phonenumber);
 
         // If a specific customer was searched but no match was found, clear logs and return
         if (targetPhoneNumbers.length === 0) {
+            console.warn("No matching customers found for the given filters. Clearing logs.");
             setCallLogs([]);
             setMessageLogs([]);
             setLoading(false);
@@ -102,9 +114,11 @@ const BillPage = () => {
         }
 
       } else {
+        console.log("No specific customer filter provided. Using all customer phone numbers.");
         // If no specific filter is provided, use all customer phone numbers from the map
         targetPhoneNumbers = Object.keys(customerPhoneToNameMap);
       }
+      console.log("Target Phone Numbers for logs:", targetPhoneNumbers);
 
       // --- Step 3: Fetch Call Logs using the determined targetPhoneNumbers and date filters ---
       let callQuery = supabase
@@ -114,18 +128,22 @@ const BillPage = () => {
 
       if (targetPhoneNumbers.length > 0) {
         callQuery = callQuery.in('whocalled', targetPhoneNumbers); // Filter by the numbers
-      } else { // No phone numbers to filter by, so no logs will be found
+        console.log("CallLogs query with 'whocalled' in:", targetPhoneNumbers);
+      } else { // This case should ideally be caught by the previous check, but as a fallback
+        console.warn("No target phone numbers for CallLogs. Clearing call logs.");
         setCallLogs([]);
-        setMessageLogs([]);
+        setMessageLogs([]); // Clear messages too if no calls
         setLoading(false);
         return;
       }
 
       if (startDate) {
         callQuery = callQuery.gte("starttime", startDate);
+        console.log("CallLogs query with starttime GTE:", startDate);
       }
       if (endDate) {
-        callQuery = callQuery.lte("endtime", endDate); // Correctly using endDate for calls
+        callQuery = callQuery.lte("endtime", endDate);
+        console.log("CallLogs query with endtime LTE:", endDate);
       }
 
       const { data: calls, error: callError } = await callQuery;
@@ -142,6 +160,8 @@ const BillPage = () => {
         setLoading(false);
         return;
       }
+      console.log("Fetched Call Logs:", calls);
+
 
       // --- Step 4: Fetch Message Logs using the determined targetPhoneNumbers and date filters ---
       let messageQuery = supabase
@@ -151,18 +171,22 @@ const BillPage = () => {
 
       if (targetPhoneNumbers.length > 0) {
         messageQuery = messageQuery.in('whomessaged', targetPhoneNumbers); // Filter by the numbers
-      } else { // No phone numbers to filter by, so no logs will be found
+        console.log("MessageLogs query with 'whomessaged' in:", targetPhoneNumbers);
+      } else { // This case should ideally be caught by the previous check, but as a fallback
+        console.warn("No target phone numbers for MessageLogs. Clearing message logs.");
         setCallLogs([]);
-        setMessageLogs([]);
+        setMessageLogs([]); // Clear calls too if no messages
         setLoading(false);
         return;
       }
 
-      if (startDate) { // Correctly using startDate for messages
+      if (startDate) {
         messageQuery = messageQuery.gte("senttime", startDate);
+        console.log("MessageLogs query with senttime GTE:", startDate);
       }
-      if (endDate) { // Correctly using endDate for messages
+      if (endDate) {
         messageQuery = messageQuery.lte("senttime", endDate);
+        console.log("MessageLogs query with senttime LTE:", endDate);
       }
 
       const { data: messages, error: msgError } = await messageQuery;
@@ -179,10 +203,17 @@ const BillPage = () => {
         setLoading(false);
         return;
       }
+      console.log("Fetched Message Logs:", messages);
 
       // Pass the customerPhoneToNameMap to groupByClient
-      setCallLogs(calls ? calls.map(call => ({ ...call, customerNameFromMap: customerPhoneToNameMap[call.whocalled] })) : []);
-      setMessageLogs(messages ? messages.map(msg => ({ ...msg, customerNameFromMap: customerPhoneToNameMap[msg.whomessaged] })) : []);
+      const mappedCalls = calls ? calls.map(call => ({ ...call, customerNameFromMap: customerPhoneToNameMap[call.whocalled] })) : [];
+      const mappedMessages = messages ? messages.map(msg => ({ ...msg, customerNameFromMap: customerPhoneToNameMap[msg.whomessaged] })) : [];
+
+      console.log("Mapped Call Logs (with customerNameFromMap):", mappedCalls);
+      console.log("Mapped Message Logs (with customerNameFromMap):", mappedMessages);
+
+      setCallLogs(mappedCalls);
+      setMessageLogs(mappedMessages);
 
 
     } catch (error) {
@@ -195,6 +226,7 @@ const BillPage = () => {
       });
     } finally {
       setLoading(false);
+      console.log("--- fetchData finished ---");
     }
   };
 
@@ -427,3 +459,4 @@ const BillPage = () => {
 };
 
 export default BillPage;
+
