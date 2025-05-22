@@ -9,16 +9,17 @@ import  "../styles/BillPage.css"; // Importing BillPage.css for specific layout/
 
 const BillPage = () => {
   const [callLogs, setCallLogs] = useState([]);
-  const [messageLogs, setMessageLogs] = useState([]);
-
   const [loading, setLoading] = useState(false);
-  const [clientName, setClientName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [name, setname] = useState("");
+  const [whocalled, setPhoneNumber] = useState("");
+  const [starttime, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const navigate = useNavigate();
   const billingRatePerMinute = 4.0; // $4.00 per minute for calls
-  const billingRatePerWord = 2.0; // $2.00 per word for messages
+  const [messageLogs, setMessageLogs] = useState([]);
+  const billingRatePerWord = 4.0; // $4.00 per word for messages
+  const [whomessaged, setPhNumber] = useState("");
+  const [senttime, setsenttime] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -32,18 +33,18 @@ const BillPage = () => {
         .select("*")
         .order("starttime", { ascending: false });
 
-      if (startDate) {
-        callQuery = callQuery.gte("starttime", startDate);
+      if (starttime) {
+        callQuery = callQuery.gte("starttime", starttime);
       }
-      if (endDate) {
-        callQuery = callQuery.lte("endtime", endDate);
-      }
+      //if (endDate) {
+      //  callQuery = callQuery.lte("endtime", endDate);
+      //}
 
-      if (clientName) {
-        callQuery = callQuery.eq("name", clientName);
+      if (name) {
+        callQuery = callQuery.eq("name", name);
       }
-      if (phoneNumber) {
-        callQuery = callQuery.eq("phone_number", phoneNumber);
+      if (whocalled) {
+        callQuery = callQuery.eq("phone_number", whocalled);
       }
 
       const { data: calls, error: callError } = await callQuery;
@@ -56,19 +57,20 @@ const BillPage = () => {
         .from("MessageLogs")
         .select("*")
         .order("senttime", { ascending: false });
-      if (startDate) {
-        messageQuery = messageQuery.gte("senttime", startDate);
+
+      if (senttime) {
+        messageQuery = messageQuery.gte("senttime", senttime);
       }
       if (endDate) {
         messageQuery = messageQuery.lte("senttime", endDate);
       }
 
-      if (clientName) {
-        messageQuery = messageQuery.eq("whomessaged", clientName);
+      if (whomessaged) {
+        messageQuery = messageQuery.eq("whomessaged", PhNumber);
       }
-      if (phoneNumber) {
-        messageQuery = messageQuery.eq("phone_number", phoneNumber);
-      }
+      //if () {
+      //  messageQuery = messageQuery.eq("phone_number", phoneNumber);
+      //}
 
       const { data: messages, error: msgError } = await messageQuery;
       if (msgError) {
