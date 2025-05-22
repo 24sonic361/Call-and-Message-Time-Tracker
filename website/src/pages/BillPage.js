@@ -15,7 +15,7 @@ const BillPage = () => {
   const [loading, setLoading] = useState(false);
 
   // Filter states for UI inputs
-  const [customerName, setCustomerName] = useState(""); // For "Name" input
+  const [customerName, setCustomerName] = useState(""); // For "Customer Name" input
   const [phoneNumberFilter, setPhoneNumberFilter] = useState(""); // For "Phone Number" input
   const [startDate, setStartDate] = useState(""); // For "Start Time" input
   const [endDate, setEndDate] = useState(""); // For "End Time" input
@@ -27,11 +27,10 @@ const BillPage = () => {
   const { currentUser } = useAuth(); // Get current user from AuthProvider (if needed for user-specific data)
 
   // useEffect hook to fetch data when component mounts or filter states change
-  // We'll keep this for initial load and when filters are cleared programmatically.
-  // The "Apply" button will now explicitly call fetchData.
+  // This ensures data is fetched on initial load and whenever filter values change.
   useEffect(() => {
     fetchData();
-  }, [customerName, phoneNumberFilter, startDate, endDate]); // Dependencies for re-fetching
+  }, [customerName, phoneNumberFilter, startDate, endDate]);
 
 
   // Fetch all calls and messages from customers
@@ -126,7 +125,7 @@ const BillPage = () => {
         callQuery = callQuery.gte("starttime", startDate);
       }
       if (endDate) {
-        callQuery = callQuery.lte("endtime", endDate);
+        callQuery = callQuery.lte("endtime", endDate); // Correctly using endDate for calls
       }
 
       const { data: calls, error: callError } = await callQuery;
@@ -159,10 +158,10 @@ const BillPage = () => {
         return;
       }
 
-      if (startDate) {
+      if (startDate) { // Correctly using startDate for messages
         messageQuery = messageQuery.gte("senttime", startDate);
       }
-      if (endDate) {
+      if (endDate) { // Correctly using endDate for messages
         messageQuery = messageQuery.lte("senttime", endDate);
       }
 
@@ -272,6 +271,7 @@ const BillPage = () => {
   };
 
   // Removed searchTerm state and filteredGroupedLogs function
+  // The groupedLogs will now always reflect the data fetched by fetchData
   const groupedLogs = groupByClient();
 
 
@@ -286,6 +286,8 @@ const BillPage = () => {
       return;
     }
     // Explicitly call fetchData to ensure a refresh when "Apply" is clicked
+    // This is important because useEffect only triggers on state changes,
+    // but if the user clicks Apply without changing inputs, fetchData won't run.
     fetchData();
   };
 
@@ -295,6 +297,7 @@ const BillPage = () => {
     setStartDate("");
     setEndDate("");
     // No need to call fetchData explicitly here, useEffect will handle it
+    // because the state changes will trigger the useEffect.
   };
 
 
@@ -417,11 +420,10 @@ const BillPage = () => {
             </Card>
           </>
         )}
-        {/* Removed Client Interaction Logs section as requested */}
+        {/* Client Interaction Logs section removed as requested */}
       </main>
     </div>
   );
 };
 
 export default BillPage;
-
