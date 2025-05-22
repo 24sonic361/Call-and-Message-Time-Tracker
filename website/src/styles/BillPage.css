@@ -1,0 +1,236 @@
+
+/* BillPage.css - Specific styles for BillPage */
+
+/* Centering the main content within the homepage-container's main-section */
+.billmain-section.centered-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers content horizontally */
+  justify-content: flex-start; /* Aligns content to the top */
+  width: 100%; /* Ensure it takes full width of its parent */
+  max-width: 900px; /* Limit the width of the centered content */
+  margin: 0 auto; /* Centers the main content block itself */
+  padding: 2rem; /* Consistent padding */
+  background-color: #f5e9f2; /* Light pink background as in the screenshot */
+  box-sizing: border-box; /* Includes padding in width calculation */
+}
+
+/* Page Header Area */
+.page-header-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  gap: 1rem; /* Spacing between title and button */
+  margin-bottom: 2rem; /* More space below header */
+  width: 100%; /* Ensure it spans the full width of main-section */
+  max-width: 700px; /* Align with card max-width */
+}
+
+/* Page Title */
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #6b2c93; /* Purple color matching the screenshot */
+  margin-bottom: 0;
+}
+
+/* Home Button */
+.home-button {
+  background: #c68bd9; /* Light purple button color from screenshot */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  border-radius: 8px; /* Rounded corners as in screenshot */
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
+}
+
+.home-button:hover {
+  background: #b07cc5; /* Slightly darker purple on hover */
+  box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
+}
+
+/* Filter Card */
+.filter-card,
+.bill-summary-card {
+  width: 100%; /* Ensure these cards take full width of their parent */
+  max-width: 700px; /* Limit width for better readability */
+  background-color: #fff; /* White background for cards */
+  border: 2px solid #e4d2f4; /* Light purple border as in screenshot */
+  border-radius: 12px;
+  box-shadow: none; /* Remove shadow to match screenshot */
+  padding: 2rem; /* Increased padding for card body */
+  margin-left: auto; /* Center cards */
+  margin-right: auto; /* Center cards */
+  margin-bottom: 2rem; /* Add space between cards */
+}
+
+/* Form Input Fields */
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: none; /* No border as in screenshot */
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #fff; /* White background for inputs */
+  color: #4a235a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow to match screenshot */
+  transition: box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.25);
+}
+
+/* Form Labels */
+.form-group .form-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6a3e94; /* Purple label color */
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  justify-content: center; /* Center buttons */
+  gap: 1rem; /* Spacing between buttons */
+  margin-top: 1.5rem; /* Space above buttons */
+  width: 100%;
+}
+
+/* Apply Button */
+.apply-button {
+  background-color: #c68bd9; /* Light purple button color */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.apply-button:hover {
+  background-color: #b07cc5; /* Slightly darker purple on hover */
+}
+
+/* Clear Button */
+.clear-button {
+  background-color: #c68bd9; /* Same light purple as Apply button */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.clear-button:hover {
+  background-color: #b07cc5; /* Slightly darker purple on hover */
+}
+
+/* Bill Summary Card and Details */
+.bill-summary-card {
+  padding: 2rem;
+}
+
+.bill-summary-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #6b2c93; /* Purple title color */
+  margin-bottom: 1.5rem;
+  text-align: left; /* Align left as in screenshot */
+}
+
+.client-bill-details {
+  background-color: transparent; /* No background for summary details */
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 1rem;
+  box-shadow: none;
+  border: none;
+}
+
+.client-bill-details p {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #45235a; /* Darker text color */
+}
+
+.client-bill-details .summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.client-bill-details .summary-value {
+  font-weight: 600;
+  color: #6b2c93; /* Purple value color */
+}
+
+/* Loading Message */
+.text-center {
+  text-align: center;
+  color: #9c7ab3;
+  font-style: italic;
+  padding: 1.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .main-section { /* Adjusted main-section for smaller screens */
+    padding: 1rem;
+    max-width: 100%; /* Allow full width on small screens */
+  }
+
+  .main-section.centered-content { /* Ensure centering still works */
+    align-items: stretch; /* Stretch content to fill width on small screens */
+    padding: 1rem; /* Adjust padding for smaller screens */
+  }
+
+  .page-header-area {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .filter-card,
+  .bill-summary-card {
+    padding: 1.5rem; /* Adjust card padding */
+  }
+
+  .filter-card .row .col-md-6 {
+    flex: 0 0 100%; /* Make columns full width */
+    max-width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .apply-button, .clear-button {
+    width: 100%;
+  }
+
+  .client-bill-details {
+    padding: 0;
+  }
+}
