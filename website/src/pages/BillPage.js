@@ -27,9 +27,12 @@ const BillPage = () => {
   const { currentUser } = useAuth(); // Get current user from AuthProvider (if needed for user-specific data)
 
   // useEffect hook to fetch data when component mounts or filter states change
+  // We'll keep this for initial load and when filters are cleared programmatically.
+  // The "Apply" button will now explicitly call fetchData.
   useEffect(() => {
     fetchData();
   }, [customerName, phoneNumberFilter, startDate, endDate]); // Dependencies for re-fetching
+
 
   // Fetch all calls and messages from customers
   const fetchData = async () => {
@@ -282,9 +285,8 @@ const BillPage = () => {
       });
       return;
     }
-    // fetchData is already triggered by useEffect when filter states change,
-    // so simply letting the state updates trigger it is sufficient.
-    // This button primarily validates dates and then relies on useEffect.
+    // Explicitly call fetchData to ensure a refresh when "Apply" is clicked
+    fetchData();
   };
 
   const handleClearFilters = () => {
@@ -292,7 +294,6 @@ const BillPage = () => {
     setPhoneNumberFilter("");
     setStartDate("");
     setEndDate("");
-    // Removed setSearchTerm('') as searchTerm state is removed
     // No need to call fetchData explicitly here, useEffect will handle it
   };
 
@@ -423,3 +424,4 @@ const BillPage = () => {
 };
 
 export default BillPage;
+
