@@ -126,7 +126,14 @@ input:checked+.slider:before {
   margin-bottom: 1.5rem;
 }
 
-.add-user-button {
+.button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 1.0rem;
+}
+
+.add-user-button,
+.billing-button {
   background: linear-gradient(135deg, #a675b0, #82489a);
   color: white;
   border: none;
@@ -139,7 +146,8 @@ input:checked+.slider:before {
   box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2);
 }
 
-.add-user-button:hover {
+.add-user-button:hover,
+.billing-button:hover {
   background: linear-gradient(135deg, #935eb6, #6e2f9c);
   box-shadow: 0 6px 20px rgba(130, 72, 154, 0.3);
 }
@@ -227,10 +235,12 @@ input:checked+.slider:before {
   display: inline-flex;
   align-items: center;
 }
+
 .action-icon:hover {
   opacity: 0.7;
 }
-.action-icon + .action-icon {
+
+.action-icon+.action-icon {
   margin-left: 8px;
 }
 

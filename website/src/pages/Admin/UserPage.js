@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient';
-import Sidebar from '../components/Sidebar';
-import { useAuth } from '../AuthProvider';
-import '../styles/AdminPage.css';
-import '../styles/Common.css';
+import { supabase } from '../../supabaseClient';
+import Sidebar from '../../components/Sidebar';
+import { useAuth } from '../../AuthProvider';
+import { useNavigate } from 'react-router-dom';
+import '../../styles/UserPage.css';
+import '../../styles/Common.css';
 import Swal from 'sweetalert2';
 
-const AdminPage = () => {
+const UserPage = () => {
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [newUser, setNewUser] = useState({ firstname: '', lastname: '', phone: '', pincode: '', email: '' });
@@ -14,6 +15,7 @@ const AdminPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [animationState, setAnimationState] = useState(''); // State for slide animation
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const adminEmail = String(currentUser.email || 'Admin');
   const itemsPerPage = 10;
 
@@ -22,7 +24,7 @@ const AdminPage = () => {
     fetchUsers();
   }, []);
 
-  // Fetch all clients
+  // Fetch all users
   const fetchUsers = async () => {
     const { data, error } = await supabase
       .from('Clients')
@@ -52,7 +54,7 @@ const AdminPage = () => {
     }
   };
 
-  // Add new client
+  // Add new user
   const handleAddUser = async (e) => {
     e.preventDefault();
     if (!newUser.firstname || !newUser.lastname || !newUser.phone || !newUser.pincode) return;
@@ -106,7 +108,7 @@ const AdminPage = () => {
     }
   };
 
-  // Update a client information (beside status)
+  // Update a user information (beside status)
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     if (!editingUser.firstname || !editingUser.lastname || !editingUser.phonenumber || !editingUser.pincode) return;
@@ -163,7 +165,7 @@ const AdminPage = () => {
     }
   };
 
-  // Delete a client
+  // Delete a user
   const handleDeleteUser = async (clid) => {
     const result = await Swal.fire({
       title: 'Delete Confirmation',
@@ -241,9 +243,14 @@ const AdminPage = () => {
       <main className="main-section">
         <div className="page-title-area">
           <h1 className="page-title">Admin - User Management</h1>
-          <button className="add-user-button" onClick={() => setShowForm(true)}>
-            Add User
-          </button>
+          <div className="button-group">
+            <button className="add-user-button" onClick={() => setShowForm(true)}>
+              Add User
+            </button>
+            <button className="billing-button" onClick={() => navigate('/bill')}>
+              Billing Calculation Page
+            </button>
+          </div>
         </div>
 
         {showForm && (
@@ -426,4 +433,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default UserPage;

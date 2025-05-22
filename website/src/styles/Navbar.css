@@ -1,76 +1,75 @@
 .pastel-navbar {
-    background: linear-gradient(to right, #f9f1ff, #f7e6ff);
-    box-shadow: 0 2px 10px rgba(155, 100, 180, 0.1);
-    padding: 0.7rem 1rem;
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  .brand-title {
-    font-weight: bold;
-    color: #81499a !important;
-    font-size: 1.4rem;
-  }
-  
-  .pastel-link {
-    color: #8c62ab !important;
-    margin-right: 1rem;
-  }
-  
-  .pastel-link:hover {
-    text-decoration: underline;
-  }
-  
-  .pastel-user {
-    font-size: 0.95rem;
-    color: #6a4f84;
-  }
-  
-  .pastel-logout-button {
-    background-color: #e6c4f0;
-    border: none;
-    color: #4a235a;
-    font-weight: bold;
-    border-radius: 30px;
-    padding: 6px 16px;
-  }
-  
-  .pastel-logout-button:hover {
-    background-color: #d8acec;
-    color: white;
-  }
-  
-  .pastel-help-button {
-    background-color: transparent;
-    border: 2px solid #a675b0;
-    color: #a675b0;
-    font-weight: bold;
-    border-radius: 30px;
-    padding: 6px 16px;
-  }
-  
-  .pastel-help-button:hover {
-    background-color: #a675b0;
-    color: white;
-  }
+  background: linear-gradient(to right, #f9f1ff, #f7e6ff);
+  box-shadow: 0 2px 10px rgba(155, 100, 180, 0.1);
+  padding: 0.7rem 1rem;
+  font-family: 'Poppins', sans-serif;
+}
 
-  .pastel-nav-button {
-    padding: 6px 18px;
-    border-radius: 20px;
-    background-color: #f1e3fc;
-    color: #82489a !important;
-    font-weight: 500;
-    margin-right: 1rem;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-  
-  .pastel-nav-button:hover {
-    background-color: #dab6f3;
-    color: #fff !important;
-    text-decoration: none;
-  }
-  
-  .pastel-nav-button.active {
-    background-color: #cfa0ea;
-    color: white !important;
-  }
-  
+.brand-title {
+  font-weight: bold;
+  color: #81499a !important;
+  font-size: 1.4rem;
+}
+
+.pastel-link {
+  color: #8c62ab !important;
+  margin-right: 1rem;
+}
+
+.pastel-link:hover {
+  text-decoration: underline;
+}
+
+.pastel-user {
+  font-size: 0.95rem;
+  color: #6a4f84;
+}
+
+.pastel-logout-button {
+  background-color: #e6c4f0;
+  border: none;
+  color: #4a235a;
+  font-weight: bold;
+  border-radius: 30px;
+  padding: 6px 16px;
+}
+
+.pastel-logout-button:hover {
+  background-color: #d8acec;
+  color: white;
+}
+
+.pastel-help-button {
+  background-color: transparent;
+  border: 2px solid #a675b0;
+  color: #a675b0;
+  font-weight: bold;
+  border-radius: 30px;
+  padding: 6px 16px;
+}
+
+.pastel-help-button:hover {
+  background-color: #a675b0;
+  color: white;
+}
+
+.pastel-nav-button {
+  padding: 6px 18px;
+  border-radius: 20px;
+  background-color: #f1e3fc;
+  color: #82489a !important;
+  font-weight: 500;
+  margin-right: 1rem;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.pastel-nav-button:hover {
+  background-color: #dab6f3;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.pastel-nav-button.active {
+  background-color: #cfa0ea;
+  color: white !important;
+}

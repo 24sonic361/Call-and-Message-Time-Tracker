@@ -1,8 +1,8 @@
 import React from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import { FaChartBar, FaUsers } from 'react-icons/fa';
-import '../styles/LandingPage.css';
+import '../../styles/LandingPage.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -10,13 +10,14 @@ const LandingPage = () => {
   return (
     <div className="admin-container">
       <Sidebar />
-      <main className="main-section">
+      <main className="landmain-section">
         <div className="center-content">
-          <h1 className="admin-header">Administrator</h1>
-          
+          <h1 className="admin-header">Fucntional Administration</h1>
+          <div className="header-divider"></div>
+
           <div className="white-box-container">
             <div className="landing-card">
-              <h2 className="landing-title">Please select a function to begin:</h2>
+              <h2 className="landing-title">Functions Selection</h2>
               
               <div className="button-grid">
                 <button 
@@ -34,7 +35,7 @@ const LandingPage = () => {
 
                 <button 
                   className="oval-button" 
-                  onClick={() => navigate('/Admin')}
+                  onClick={() => navigate('/user')}
                 >
                   <div className="button-content">
                     <FaUsers className="button-icon" />

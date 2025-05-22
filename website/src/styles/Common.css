@@ -6,6 +6,7 @@
   margin-top: 16px;
   gap: 12px;
 }
+
 .pagination-button {
   padding: 8px 16px;
   border: 1px solid #4a235a;
@@ -14,10 +15,12 @@
   cursor: pointer;
   border-radius: 4px;
 }
+
 .pagination-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .pagination-info {
   font-size: 14px;
   color: #4a235a;
@@ -55,6 +58,7 @@
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(-100%);
     opacity: 0;
@@ -66,6 +70,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -77,6 +82,7 @@
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(100%);
     opacity: 0;
@@ -88,6 +94,7 @@
     transform: translateX(-100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;

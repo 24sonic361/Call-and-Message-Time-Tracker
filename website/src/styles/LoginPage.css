@@ -1,103 +1,102 @@
 .login-background {
-    background: linear-gradient(to bottom right, #fdf7ff, #f3ecff);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  .tracker-title {
-    color: #82489a;
-    font-size: 1.75rem;
-    font-weight: 600;
-    text-align: center;
-  }
-  
-  .login-card {
-    padding: 2rem;
-    border-radius: 20px;
-    background-color: #ffffff;
-    border: none;
-    max-width: 420px;
-    width: 100%;
-    box-shadow: 0 20px 50px rgba(150, 100, 180, 0.1);
-  }
+  background: linear-gradient(to bottom right, #fdf7ff, #f3ecff);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  font-family: 'Poppins', sans-serif;
+}
 
-  .password-wrapper .pastel-input {
-    padding-right: 2.5rem;
-  }
-  
-  .toggle-eye {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #a48acb;
-    font-size: 1.25rem;
-  }  
-  
-  .pastel-title {
-    color: #82489a;
-    font-weight: 600;
-    font-size: 1.5rem;
-    text-align: center;
-  }
-  
-  .pastel-input {
-    border-radius: 12px;
-    border: 1px solid #ded2eb;
-    background-color: #f7f3ff;
-    padding: 0.75rem;
-  }
-  
-  .pastel-input:focus {
-    border-color: #b98fdc;
-    box-shadow: 0 0 0 0.15rem rgba(185, 143, 220, 0.25);
-  }
-  
-  .gradient-button {
-    background: linear-gradient(135deg, #dba9f2, #a675b0);
-    border: none;
-    border-radius: 30px;
-    font-weight: bold;
-    transition: all 0.3s ease-in-out;
-    color: #fff;
-  }
-  
-  .gradient-button:hover {
-    background: linear-gradient(135deg, #c67ee2, #8e5aa8);
-  }
-  
-  .pastel-link {
-    color: #8c62ab;
-    font-size: 0.95rem;
-    text-decoration: none;
-  }
-  
-  .pastel-link:hover {
-    text-decoration: underline;
-  }
-  
-  .request-account-button {
-    display: inline-block;
-    margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid #a675b0;
-    border-radius: 25px;
-    background-color: transparent;
-    color: #a675b0;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-  
-  .request-account-button:hover {
-    background-color: #f0defc;
-    color: #4a235a;
-    text-decoration: none;
-    border-color: #a675b0;
-  }
-  
+.tracker-title {
+  color: #82489a;
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.login-card {
+  padding: 2rem;
+  border-radius: 20px;
+  background-color: #ffffff;
+  border: none;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(150, 100, 180, 0.1);
+}
+
+.password-wrapper .pastel-input {
+  padding-right: 2.5rem;
+}
+
+.toggle-eye {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #a48acb;
+  font-size: 1.25rem;
+}
+
+.pastel-title {
+  color: #82489a;
+  font-weight: 600;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.pastel-input {
+  border-radius: 12px;
+  border: 1px solid #ded2eb;
+  background-color: #f7f3ff;
+  padding: 0.75rem;
+}
+
+.pastel-input:focus {
+  border-color: #b98fdc;
+  box-shadow: 0 0 0 0.15rem rgba(185, 143, 220, 0.25);
+}
+
+.gradient-button {
+  background: linear-gradient(135deg, #dba9f2, #a675b0);
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+  color: #fff;
+}
+
+.gradient-button:hover {
+  background: linear-gradient(135deg, #c67ee2, #8e5aa8);
+}
+
+.pastel-link {
+  color: #8c62ab;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.pastel-link:hover {
+  text-decoration: underline;
+}
+
+.request-account-button {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #a675b0;
+  border-radius: 25px;
+  background-color: transparent;
+  color: #a675b0;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.request-account-button:hover {
+  background-color: #f0defc;
+  color: #4a235a;
+  text-decoration: none;
+  border-color: #a675b0;
+}
