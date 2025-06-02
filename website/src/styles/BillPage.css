@@ -285,4 +285,33 @@
   .client-bill-details {
     padding: 0;
   }
+
+  .suggestion-list {
+  position: absolute;
+  width: calc(100% - 24px); /* 减去 padding */
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: rgb(243, 0, 0);
+  border: 1px solid #e70000; /* 浅紫色边框，与整体风格一致 */
+  border-radius: 8px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(130, 72, 154, 0.2); /* 紫色阴影 */
+  margin-top: 4px;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #6b2c93; /* 紫色文字 */
+  font-size: 0.95rem;
+}
+
+.suggestion-item:hover {
+  background-color: #5c0045; /* 浅粉色悬停背景 */
+}
+
+/* 确保输入框容器是相对定位 */
+.position-relative {
+  position: relative;
+}
 }

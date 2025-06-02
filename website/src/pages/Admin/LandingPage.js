@@ -17,7 +17,6 @@ const LandingPage = () => {
 
           <div className="white-box-container">
             <div className="landing-card">
-              <h2 className="landing-title">Functions Selection</h2>
               
               <div className="button-grid">
                 <button 
