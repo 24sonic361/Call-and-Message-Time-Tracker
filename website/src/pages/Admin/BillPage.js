@@ -14,16 +14,11 @@ const BillPage = () => {
   const [messageLogs, setMessageLogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [allCustomerNames, setAllCustomerNames] = useState([]); // 存储所有客户姓名
-  const [showSuggestions, setShowSuggestions] = useState(false); // 控制建议列表显示
-  const [filteredSuggestions, setFilteredSuggestions] = useState([]); // 过滤后的建议列表
-
   // Filter states for UI inputs
   const [customerName, setCustomerName] = useState(""); // For "Customer Name" input
   const [phoneNumberFilter, setPhoneNumberFilter] = useState(""); // For "Phone Number" input
   const [startDate, setStartDate] = useState(""); // For "Start Time" input
   const [endDate, setEndDate] = useState(""); // For "End Time" input
-
 
   const navigate = useNavigate();
   const billingRatePerMinute = 4.0; // $4.00 per minute for calls
@@ -33,33 +28,10 @@ const BillPage = () => {
 
   // useEffect hook to fetch data when component mounts or filter states change
   // This ensures data is fetched on initial load and whenever filter values change.
-useEffect(() => {
-  console.log("useEffect triggered. Fetching data...");
-  fetchData();
-}, [customerName, phoneNumberFilter, startDate, endDate]);
-
-useEffect(() => {
-  const fetchCustomerNames = async () => {
-    const { data, error } = await supabase
-      .from("Customers")
-      .select("fullname, phonenumber");
-    
-    if (error) {
-      console.error("Error fetching customer names:", error);
-      return;
-    }
-    
-    const uniqueNames = [...new Map(data.map(item => 
-       [item.fullname, item.phonenumber]))].map(([fullname, phonenumber]) => ({
-        fullname,
-        phonenumber
-      })).sort((a, b) => a.fullname.localeCompare(b.fullname));
-    
-    setAllCustomerNames(uniqueNames);
-  };
-
-  fetchCustomerNames();
-}, []);
+  useEffect(() => {
+    console.log("useEffect triggered. Fetching data...");
+    fetchData();
+  }, [customerName, phoneNumberFilter, startDate, endDate]);
 
   // Fetch all calls and messages from customers
   const fetchData = async () => {
@@ -300,28 +272,6 @@ useEffect(() => {
     }
   };
 
-    const handleCustomerNameChange = (e) => {
-  const input = e.target.value;
-  setCustomerName(input);
-  
-  if (input.length > 0) {
-    const filtered = allCustomerNames.filter(customer => 
-      customer.fullname.toLowerCase().includes(input.toLowerCase())
-    );
-    setFilteredSuggestions(filtered);
-    setShowSuggestions(true);
-  } else {
-    setShowSuggestions(false);
-  }
-};
-
-const handleSuggestionClick = (customer) => {
-  setCustomerName(customer.fullname);
-  setPhoneNumberFilter(customer.phonenumber);
-  setShowSuggestions(false);
-};
-
-
   const groupByClient = () => {
     const grouped = {};
 
@@ -357,7 +307,6 @@ const handleSuggestionClick = (customer) => {
       }
     });
 
-  
     messageLogs.forEach((msg) => {
       // Use the name from the map, falling back to 'Unknown' if not found
       const clientNameForGrouping =
@@ -431,7 +380,6 @@ const handleSuggestionClick = (customer) => {
     setPhoneNumberFilter("");
     setStartDate("");
     setEndDate("");
-    setShowSuggestions(false); 
     // No need to call fetchData explicitly here, useEffect will handle it
     // because the state changes will trigger the useEffect.
   };
@@ -467,32 +415,18 @@ const handleSuggestionClick = (customer) => {
           <Card.Body>
             <h2 className="bill-summary-title">Filtering</h2>
             <Row className="mb-3">
-<Col md={6}>
-  <Form.Group className="position-relative">
-    <Form.Label>Customer Name:</Form.Label>
-    <Form.Control
-      type="text"
-      placeholder="Enter customer name"
-      value={customerName}
-      onChange={handleCustomerNameChange}
-      className="form-input"
-      autoComplete="off"
-    />
-    {showSuggestions && filteredSuggestions.length > 0 && (
-      <div className="suggestion-list">
-        {filteredSuggestions.map((customer, index) => (
-          <div 
-            key={index}
-            className="suggestion-item"
-            onClick={() => handleSuggestionClick(customer)}
-          >
-            {customer.fullname} ({customer.phonenumber})
-          </div>
-        ))}
-      </div>
-    )}
-  </Form.Group>
-</Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Customer Name:</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter customer name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="form-input"
+                  />
+                </Form.Group>
+              </Col>
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>Phone Number:</Form.Label>
