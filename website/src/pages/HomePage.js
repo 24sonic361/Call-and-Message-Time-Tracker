@@ -152,7 +152,7 @@ const HomePage = () => {
       } else if (sortOption === 'longest') {
         sorted.sort((a, b) => (b.wordcount || 0) - (a.wordcount || 0));
       } else if (sortOption === 'shortest') {
-        sorted.sort((a, b) => (a.wordcount || 0) - (a.wordcount || 0));
+        sorted.sort((a, b) => (a.wordcount || 0) - (b.wordcount || 0));
       }
     }
     return sorted;
