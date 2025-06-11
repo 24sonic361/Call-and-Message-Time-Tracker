@@ -27,7 +27,7 @@ const BillPage = () => {
 
   const navigate = useNavigate();
   const billingRatePerMinute = 4.0; // $4.00 per minute for calls
-  const billingRatePerWord = 4.0; // $4.00 per word for messages
+  const billingRatePerWord = 0.1; // $4.00 per word for messages
 
   const { currentUser } = useAuth(); // Get current user from AuthProvider (if needed for user-specific data)
 
