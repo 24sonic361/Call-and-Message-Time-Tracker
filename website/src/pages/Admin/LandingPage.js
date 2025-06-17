@@ -12,7 +12,7 @@ const LandingPage = () => {
       <Sidebar />
       <main className="landmain-section">
         <div className="center-content">
-          <h1 className="admin-header">Fucntional Administration</h1>
+          <h1 className="admin-header">Functional Administration</h1>
           <div className="header-divider"></div>
 
           <div className="white-box-container">

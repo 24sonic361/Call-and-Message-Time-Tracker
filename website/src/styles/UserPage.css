@@ -117,15 +117,6 @@ input:checked+.slider:before {
   color: #F44336;
 }
 
-.page-title-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
 .button-group {
   display: flex;
   flex-direction: row;
@@ -165,6 +156,15 @@ input:checked+.slider:before {
   width: 90%;
   max-width: 400px;
   animation: fadeInScale 0.3s ease-in-out;
+}
+
+.controls-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 @keyframes fadeInScale {

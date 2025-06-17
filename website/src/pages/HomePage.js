@@ -14,17 +14,16 @@ const HomePage = () => {
   const [sortOption, setSortOption] = useState('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [animationState, setAnimationState] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const itemsPerPage = 10;
   const dropdownRef = useRef(null);
   const { currentUser } = useAuth();
   const adminEmail = String(currentUser.email || "Admin");
 
-  // Display all data when the page is triggered
   useEffect(() => {
     fetchData();
-  }, []);
+  });
 
-  // Handle dropdown selection
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -35,9 +34,7 @@ const HomePage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch all calls and messages from clients
   async function fetchData() {
-    // Fetch email from Clients table to compare with adminEmail
     const { data: clientEmails, error: emailError } = await supabase
       .from('Clients')
       .select('email')
@@ -54,7 +51,6 @@ const HomePage = () => {
     let customerMap = {};
 
     if (clientEmails && clientEmails.length > 0) {
-      // Fetch matching email from Customers table
       const { data: customerData, error: customerError } = await supabase
         .from('Customers')
         .select('phonenumber, fullname')
@@ -73,7 +69,6 @@ const HomePage = () => {
         return map;
       }, {});
     } else {
-      // No email match (admin case), fetch all customer phonenumbers and fullnames
       const { data: allCustomerData, error: allCustomerError } = await supabase
         .from('Customers')
         .select('phonenumber, fullname');
@@ -92,14 +87,12 @@ const HomePage = () => {
       }, {});
     }
 
-    // Fetch all client calls
     const { data: calls, error: callsError } = await supabase
       .from('CallLogs')
       .select('*')
       .in('whocalled', phoneNumbers)
       .order('starttime', { ascending: false });
 
-    // Fetch all client messages
     const { data: messages, error: messagesError } = await supabase
       .from('MessageLogs')
       .select('*')
@@ -110,7 +103,6 @@ const HomePage = () => {
       console.error('Error fetching call logs:', callsError);
       setCallLogs([]);
     } else {
-      // Map fullname to call logs
       const enrichedCalls = calls.map(call => ({
         ...call,
         fullname: customerMap[call.whocalled] || 'Unknown'
@@ -122,7 +114,6 @@ const HomePage = () => {
       console.error('Error fetching message logs:', messagesError);
       setMessageLogs([]);
     } else {
-      // Map fullname to message logs
       const enrichedMessages = messages.map(msg => ({
         ...msg,
         fullname: customerMap[msg.whomessaged] || 'Unknown'
@@ -131,7 +122,6 @@ const HomePage = () => {
     }
   }
 
-  // Sort feature logic
   const sortData = (data, isCalls) => {
     const sorted = [...data];
     if (isCalls) {
@@ -158,25 +148,36 @@ const HomePage = () => {
     return sorted;
   };
 
-  // Sort feature logic
+  const filterData = (data) => {
+    if (!searchQuery) return data;
+    return data.filter((item) =>
+      item.fullname && item.fullname.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
   const sortedCallLogs = sortData(callLogs, true);
   const sortedMessageLogs = sortData(messageLogs, false);
+  const filteredCallLogs = filterData(sortedCallLogs);
+  const filteredMessageLogs = filterData(sortedMessageLogs);
 
-  // Paging calculation logic
-  const totalCallPages = Math.ceil(sortedCallLogs.length / itemsPerPage);
-  const totalMessagePages = Math.ceil(sortedMessageLogs.length / itemsPerPage);
+  const totalCallPages = Math.ceil(filteredCallLogs.length / itemsPerPage);
+  const totalMessagePages = Math.ceil(filteredMessageLogs.length / itemsPerPage);
 
-  const paginatedCallLogs = sortedCallLogs.slice(
+  const paginatedCallLogs = filteredCallLogs.slice(
     (currentCallPage - 1) * itemsPerPage,
     currentCallPage * itemsPerPage
   );
 
-  const paginatedMessageLogs = sortedMessageLogs.slice(
+  const paginatedMessageLogs = filteredMessageLogs.slice(
     (currentMessagePage - 1) * itemsPerPage,
     currentMessagePage * itemsPerPage
   );
 
-  // Sort feature handling (reset to page 1 when select a new sort type)
+  useEffect(() => {
+    setCurrentCallPage(1);
+    setCurrentMessagePage(1);
+  }, [searchQuery]);
+
   const handleSortSelect = (option) => {
     setSortOption(option);
     setShowSortDropdown(false);
@@ -184,15 +185,18 @@ const HomePage = () => {
     setCurrentMessagePage(1);
   };
 
-  // Handle next page with slide animation
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   const handleNextCallPage = () => {
     if (currentCallPage < totalCallPages) {
       setAnimationState('slide-out-left');
       setTimeout(() => {
         setCurrentCallPage((prev) => prev + 1);
         setAnimationState('slide-in-right');
-        setTimeout(() => setAnimationState(''), 300); // Reset animation state
-      }, 300); // Match animation duration
+        setTimeout(() => setAnimationState(''), 300);
+      }, 300);
     }
   };
 
@@ -202,20 +206,19 @@ const HomePage = () => {
       setTimeout(() => {
         setCurrentMessagePage((prev) => prev + 1);
         setAnimationState('slide-in-right');
-        setTimeout(() => setAnimationState(''), 300); // Reset animation state
-      }, 300); // Match animation duration
+        setTimeout(() => setAnimationState(''), 300);
+      }, 300);
     }
   };
 
-  // Handle previous page with slide animation
   const handlePrevCallPage = () => {
     if (currentCallPage > 1) {
       setAnimationState('slide-out-right');
       setTimeout(() => {
         setCurrentCallPage((prev) => prev - 1);
         setAnimationState('slide-in-left');
-        setTimeout(() => setAnimationState(''), 300); // Reset animation state
-      }, 300); // Match animation duration
+        setTimeout(() => setAnimationState(''), 300);
+      }, 300);
     }
   };
 
@@ -225,8 +228,8 @@ const HomePage = () => {
       setTimeout(() => {
         setCurrentMessagePage((prev) => prev - 1);
         setAnimationState('slide-in-left');
-        setTimeout(() => setAnimationState(''), 300); // Reset animation state
-      }, 300); // Match animation duration
+        setTimeout(() => setAnimationState(''), 300);
+      }, 300);
     }
   };
 
@@ -253,6 +256,14 @@ const HomePage = () => {
             </button>
           </div>
           <div className="sort-container" ref={dropdownRef}>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              title="Search by customer name"
+            />
             <button
               className="sort-button"
               onClick={() => setShowSortDropdown(!showSortDropdown)}

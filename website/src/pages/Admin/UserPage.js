@@ -1,25 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
-import Sidebar from '../../components/Sidebar';
-import { useAuth } from '../../AuthProvider';
-import { useNavigate } from 'react-router-dom';
-import '../../styles/UserPage.css';
-import '../../styles/Common.css';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../supabaseClient";
+import Sidebar from "../../components/Sidebar";
+import { useAuth } from "../../AuthProvider";
+import { useNavigate } from "react-router-dom";
+import "../../styles/UserPage.css";
+import "../../styles/Common.css";
+import Swal from "sweetalert2";
 
 const UserPage = () => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [newUser, setNewUser] = useState({ firstname: '', lastname: '', phone: '', pincode: '', email: '' });
+  const [newUser, setNewUser] = useState({
+    firstname: "",
+    lastname: "",
+    phone: "",
+    pincode: "",
+    email: "",
+  });
   const [editingUser, setEditingUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [animationState, setAnimationState] = useState(''); // State for slide animation
+  const [animationState, setAnimationState] = useState("");
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const adminEmail = String(currentUser.email || 'Admin');
+  const adminEmail = String(currentUser.email || "Admin");
   const itemsPerPage = 10;
 
-  // Display all users when the page is triggered
+  // Fetch all users when the page loads
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -27,51 +35,79 @@ const UserPage = () => {
   // Fetch all users
   const fetchUsers = async () => {
     const { data, error } = await supabase
-      .from('Clients')
-      .select('*')
-      .order('firstname', { ascending: true });
+      .from("Clients")
+      .select("*")
+      .order("firstname", { ascending: true });
 
     if (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     } else {
       setUsers(data);
-      setCurrentPage(1); // Reset to page 1 when data is refreshed
+      setFilteredUsers(data); // Initialize filteredUsers with all users
+      setCurrentPage(1);
+    }
+  };
+
+  // Handle search input change
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page on search
+    if (query === "") {
+      setFilteredUsers(users);
+    } else {
+      const filtered = users.filter((user) =>
+        `${user.firstname} ${user.lastname}`.toLowerCase().includes(query)
+      );
+      setFilteredUsers(filtered);
     }
   };
 
   // Update a client status
   const handleToggle = async (clid, currentStatus) => {
-    const newStatus = currentStatus === 'enabled' ? 'disabled' : 'enabled';
+    const newStatus = currentStatus === "enabled" ? "disabled" : "enabled";
     const { error } = await supabase
-      .from('Clients')
+      .from("Clients")
       .update({ status: newStatus })
-      .eq('clid', clid);
+      .eq("clid", clid);
 
     if (!error) {
-      setUsers(users.map(u => u.clid === clid ? { ...u, status: newStatus } : u));
+      setUsers(
+        users.map((u) => (u.clid === clid ? { ...u, status: newStatus } : u))
+      );
+      setFilteredUsers(
+        filteredUsers.map((u) =>
+          u.clid === clid ? { ...u, status: newStatus } : u
+        )
+      );
     } else {
-      console.error('Error updating status:', error);
+      console.error("Error updating status:", error);
     }
   };
 
   // Add new user
   const handleAddUser = async (e) => {
     e.preventDefault();
-    if (!newUser.firstname || !newUser.lastname || !newUser.phone || !newUser.pincode) return;
+    if (
+      !newUser.firstname ||
+      !newUser.lastname ||
+      !newUser.phone ||
+      !newUser.pincode
+    )
+      return;
     if (!/^\d{4}$/.test(newUser.pincode)) {
       Swal.fire({
-        icon: 'error',
-        title: 'Invalid PIN',
-        text: 'PIN must be a 4-digit number.',
-        confirmButtonColor: '#a675b0'
+        icon: "error",
+        title: "Invalid PIN",
+        text: "PIN must be a 4-digit number.",
+        confirmButtonColor: "#a675b0",
       });
       return;
     }
 
     const currentTime = new Date();
-    const { error } = await supabase
-      .from('Clients')
-      .insert([{
+    const { error } = await supabase.from("Clients").insert([
+      {
         firstname: newUser.firstname,
         lastname: newUser.lastname,
         phonenumber: newUser.phone,
@@ -80,30 +116,31 @@ const UserPage = () => {
         modifiedby: adminEmail,
         createdon: currentTime,
         modifiedon: currentTime,
-        status: 'enabled',
-        email: newUser.email
-      }]);
+        status: "enabled",
+        email: newUser.email,
+      },
+    ]);
 
     if (!error) {
-      setNewUser({ firstname: '', lastname: '', phone: '', pincode: '' });
+      setNewUser({ firstname: "", lastname: "", phone: "", pincode: "" });
       setShowForm(false);
       fetchUsers();
       Swal.fire({
-        icon: 'success',
-        title: 'User Added!',
-        text: 'The new user has been added successfully.',
-        background: '#fdf7ff',
-        color: '#4a235a',
-        confirmButtonColor: '#a675b0',
-        confirmButtonText: 'OK'
+        icon: "success",
+        title: "User Added!",
+        text: "The new user has been added successfully.",
+        background: "#fdf7ff",
+        color: "#4a235a",
+        confirmButtonColor: "#a675b0",
+        confirmButtonText: "OK",
       });
     } else {
-      console.error('Error adding user:', error);
+      console.error("Error adding user:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to add user. Please try again.',
-        confirmButtonColor: '#a675b0'
+        icon: "error",
+        title: "Error",
+        text: "Failed to add user. Please try again.",
+        confirmButtonColor: "#a675b0",
       });
     }
   };
@@ -111,53 +148,62 @@ const UserPage = () => {
   // Update a user information (beside status)
   const handleUpdateUser = async (e) => {
     e.preventDefault();
-    if (!editingUser.firstname || !editingUser.lastname || !editingUser.phonenumber || !editingUser.pincode) return;
+    if (
+      !editingUser.firstname ||
+      !editingUser.lastname ||
+      !editingUser.phonenumber ||
+      !editingUser.pincode
+    )
+      return;
     if (!/^\d{4}$/.test(editingUser.pincode)) {
       Swal.fire({
-        icon: 'error',
-        title: 'Invalid PIN',
-        text: 'PIN must be a 4-digit number.',
-        confirmButtonColor: '#a675b0'
+        icon: "error",
+        title: "Invalid PIN",
+        text: "PIN must be a 4-digit number.",
+        confirmButtonColor: "#a675b0",
       });
       return;
     }
 
-    // Compare data (only update modified field)
-    const originalUser = users.find(u => u.clid === editingUser.clid);
+    const originalUser = users.find((u) => u.clid === editingUser.clid);
     const updates = {};
-    if (editingUser.firstname !== originalUser.firstname) updates.firstname = editingUser.firstname;
-    if (editingUser.lastname !== originalUser.lastname) updates.lastname = editingUser.lastname;
-    if (editingUser.phonenumber !== originalUser.phonenumber) updates.phonenumber = editingUser.phonenumber;
-    if (editingUser.pincode !== originalUser.pincode) updates.pincode = editingUser.pincode;
+    if (editingUser.firstname !== originalUser.firstname)
+      updates.firstname = editingUser.firstname;
+    if (editingUser.lastname !== originalUser.lastname)
+      updates.lastname = editingUser.lastname;
+    if (editingUser.phonenumber !== originalUser.phonenumber)
+      updates.phonenumber = editingUser.phonenumber;
+    if (editingUser.pincode !== originalUser.pincode)
+      updates.pincode = editingUser.pincode;
     updates.modifiedby = adminEmail;
     updates.modifiedon = new Date();
 
     if (Object.keys(updates).length > 0) {
-      updates.modifiedby = String(currentUser.email || 'Admin');
+      updates.modifiedby = String(currentUser.email || "Admin");
       updates.modifiedon = new Date();
       const { error } = await supabase
-        .from('Clients')
+        .from("Clients")
         .update(updates)
-        .eq('clid', editingUser.clid);
+        .eq("clid", editingUser.clid);
       if (!error) {
         setEditingUser(null);
         fetchUsers();
         Swal.fire({
-          icon: 'success',
-          title: 'User Updated!',
-          text: 'The user has been updated successfully.',
-          background: '#fdf7ff',
-          color: '#4a235a',
-          confirmButtonColor: '#a675b0',
-          confirmButtonText: 'OK'
+          icon: "success",
+          title: "User Updated!",
+          text: "The user has been updated successfully.",
+          background: "#fdf7ff",
+          color: "#4a235a",
+          confirmButtonColor: "#a675b0",
+          confirmButtonText: "OK",
         });
       } else {
-        console.error('Error updating user:', error);
+        console.error("Error updating user:", error);
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to update user. Please try again.',
-          confirmButtonColor: '#a675b0'
+          icon: "error",
+          title: "Error",
+          text: "Failed to update user. Please try again.",
+          confirmButtonColor: "#a675b0",
         });
       }
     } else {
@@ -168,47 +214,47 @@ const UserPage = () => {
   // Delete a user
   const handleDeleteUser = async (clid) => {
     const result = await Swal.fire({
-      title: 'Delete Confirmation',
-      text: 'Do you want to delete this user?',
-      icon: 'warning',
+      title: "Delete Confirmation",
+      text: "Do you want to delete this user?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#a675b0',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, Delete!',
-      background: '#fdf7ff',
-      color: '#4a235a'
+      confirmButtonColor: "#a675b0",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Delete!",
+      background: "#fdf7ff",
+      color: "#4a235a",
     });
 
     if (result.isConfirmed) {
       const { error } = await supabase
-        .from('Clients')
+        .from("Clients")
         .delete()
-        .eq('clid', clid);
+        .eq("clid", clid);
       if (!error) {
         fetchUsers();
         Swal.fire({
-          icon: 'success',
-          title: 'Deleted!',
-          text: 'The user has been deleted.',
-          background: '#fdf7ff',
-          color: '#4a235a',
-          confirmButtonColor: '#a675b0'
+          icon: "success",
+          title: "Deleted!",
+          text: "The user has been deleted.",
+          background: "#fdf7ff",
+          color: "#4a235a",
+          confirmButtonColor: "#a675b0",
         });
       } else {
-        console.error('Error deleting user:', error);
+        console.error("Error deleting user:", error);
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to delete user. Please try again.',
-          confirmButtonColor: '#a675b0'
+          icon: "error",
+          title: "Error",
+          text: "Failed to delete user. Please try again.",
+          confirmButtonColor: "#a675b0",
         });
       }
     }
   };
 
   // Paging calculation logic
-  const totalPages = Math.ceil(users.length / itemsPerPage);
-  const paginatedUsers = users.slice(
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -216,24 +262,24 @@ const UserPage = () => {
   // Handle next page with slide animation
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setAnimationState('slide-out-left');
+      setAnimationState("slide-out-left");
       setTimeout(() => {
         setCurrentPage((prev) => prev + 1);
-        setAnimationState('slide-in-right');
-        setTimeout(() => setAnimationState(''), 300); // Reset animation state
-      }, 300); // Match animation duration
+        setAnimationState("slide-in-right");
+        setTimeout(() => setAnimationState(""), 300);
+      }, 300);
     }
   };
 
   // Handle previous page with slide animation
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      setAnimationState('slide-out-right');
+      setAnimationState("slide-out-right");
       setTimeout(() => {
         setCurrentPage((prev) => prev - 1);
-        setAnimationState('slide-in-left');
-        setTimeout(() => setAnimationState(''), 300); // Reset animation state
-      }, 300); // Match animation duration
+        setAnimationState("slide-in-left");
+        setTimeout(() => setAnimationState(""), 300);
+      }, 300);
     }
   };
 
@@ -241,13 +287,26 @@ const UserPage = () => {
     <div className="admin-container">
       <Sidebar />
       <main className="main-section">
-        <div className="page-title-area">
-          <h1 className="page-title">Admin - User Management</h1>
+        <h1 className="page-title">Admin - User Management</h1>
+        <div className="controls-container">
+          <input
+            type="text"
+            placeholder="Search by User Name..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="search-input"
+          />
           <div className="button-group">
-            <button className="add-user-button" onClick={() => setShowForm(true)}>
+            <button
+              className="add-user-button"
+              onClick={() => setShowForm(true)}
+            >
               Add User
             </button>
-            <button className="billing-button" onClick={() => navigate('/bill')}>
+            <button
+              className="billing-button"
+              onClick={() => navigate("/bill")}
+            >
               Billing Calculation Page
             </button>
           </div>
@@ -261,42 +320,54 @@ const UserPage = () => {
                 type="text"
                 placeholder="First Name"
                 value={newUser.firstname}
-                onChange={(e) => setNewUser({ ...newUser, firstname: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, firstname: e.target.value })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={newUser.lastname}
-                onChange={(e) => setNewUser({ ...newUser, lastname: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, lastname: e.target.value })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="Phone Number"
                 value={newUser.phone}
-                onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, phone: e.target.value })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="Email"
                 value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="4-Digit PIN"
                 value={newUser.pincode}
-                onChange={(e) => setNewUser({ ...newUser, pincode: e.target.value })}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, pincode: e.target.value })
+                }
                 pattern="[0-9]{4}"
                 maxLength="4"
                 required
               />
               <div className="form-actions">
                 <button type="submit">Add</button>
-                <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                <button type="button" onClick={() => setShowForm(false)}>
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -310,35 +381,48 @@ const UserPage = () => {
                 type="text"
                 placeholder="First Name"
                 value={editingUser.firstname}
-                onChange={(e) => setEditingUser({ ...editingUser, firstname: e.target.value })}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, firstname: e.target.value })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={editingUser.lastname}
-                onChange={(e) => setEditingUser({ ...editingUser, lastname: e.target.value })}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, lastname: e.target.value })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="Phone Number"
                 value={editingUser.phonenumber}
-                onChange={(e) => setEditingUser({ ...editingUser, phonenumber: e.target.value })}
+                onChange={(e) =>
+                  setEditingUser({
+                    ...editingUser,
+                    phonenumber: e.target.value,
+                  })
+                }
                 required
               />
               <input
                 type="text"
                 placeholder="4-Digit PIN"
                 value={editingUser.pincode}
-                onChange={(e) => setEditingUser({ ...editingUser, pincode: e.target.value })}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, pincode: e.target.value })
+                }
                 pattern="[0-9]{4}"
                 maxLength="4"
                 required
               />
               <div className="form-actions">
                 <button type="submit">Update</button>
-                <button type="button" onClick={() => setEditingUser(null)}>Cancel</button>
+                <button type="button" onClick={() => setEditingUser(null)}>
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -357,24 +441,36 @@ const UserPage = () => {
               </thead>
               <tbody>
                 {paginatedUsers.length === 0 ? (
-                  <tr><td colSpan="4" className="empty-message">No user data available</td></tr>
+                  <tr>
+                    <td colSpan="4" className="empty-message">
+                      No user data available
+                    </td>
+                  </tr>
                 ) : (
-                  paginatedUsers.map(user => (
+                  paginatedUsers.map((user) => (
                     <tr key={user.clid}>
-                      <td>{user.firstname} {user.lastname}</td>
+                      <td>
+                        {user.firstname} {user.lastname}
+                      </td>
                       <td>{user.phonenumber}</td>
                       <td>
                         <label className="switch">
                           <input
                             type="checkbox"
-                            checked={user.status === 'disabled'}
-                            onChange={() => handleToggle(user.clid, user.status)}
-                            style={{ position: 'relative', zIndex: 10 }}
+                            checked={user.status === "disabled"}
+                            onChange={() =>
+                              handleToggle(user.clid, user.status)
+                            }
+                            style={{ position: "relative", zIndex: 10 }}
                           />
                           <span className="slider" />
                         </label>
-                        <span className={`status-label ${user.status === 'enabled' ? 'enabled' : 'disabled'}`}>
-                          {user.status === 'enabled' ? 'Enabled' : 'Disabled'}
+                        <span
+                          className={`status-label ${
+                            user.status === "enabled" ? "enabled" : "disabled"
+                          }`}
+                        >
+                          {user.status === "enabled" ? "Enabled" : "Disabled"}
                         </span>
                       </td>
                       <td>
@@ -383,7 +479,14 @@ const UserPage = () => {
                           onClick={() => setEditingUser({ ...user })}
                           title="Edit User"
                         >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a235a" strokeWidth="2">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#4a235a"
+                            strokeWidth="2"
+                          >
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                           </svg>
@@ -393,7 +496,14 @@ const UserPage = () => {
                           onClick={() => handleDeleteUser(user.clid)}
                           title="Delete User"
                         >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff0000" strokeWidth="2">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#ff0000"
+                            strokeWidth="2"
+                          >
                             <path d="M3 6h18" />
                             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                             <path d="M3 6v14c0 1 1 2 2 2h14c1 0 2-1 2-2V6" />

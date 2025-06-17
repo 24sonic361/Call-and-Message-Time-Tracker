@@ -9,6 +9,13 @@
   font-weight: bold;
   color: #81499a !important;
   font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+}
+
+.brand-title img {
+  height: 30px;
+  margin-right: 10px;
 }
 
 .pastel-link {
